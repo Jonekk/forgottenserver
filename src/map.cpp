@@ -980,6 +980,12 @@ QTreeLeafNode* QTreeNode::createLeaf(uint32_t x, uint32_t y, uint32_t level)
 	return static_cast<QTreeLeafNode*>(this);
 }
 
+QTreeNode* QTreeNode::getChild(uint8_t id)
+{
+	if (id > sizeof(child) / sizeof(child[0]) - 1) return NULL;
+	return child[id];
+}
+
 // QTreeLeafNode
 bool QTreeLeafNode::newLeaf = false;
 

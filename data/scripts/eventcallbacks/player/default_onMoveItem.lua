@@ -1,6 +1,10 @@
 local ec = EventCallback
 
 ec.onMoveItem = function(self, item, count, fromPosition, toPosition, fromCylinder, toCylinder)
+	if item:getTopParent() ~= self then
+		customOnPlayerMoveItem(player, item, count, fromPosition, toPosition, fromCylinder, toCylinder)
+	end
+
 	if item:getAttribute("wrapid") ~= 0 then
 		local tile = Tile(toPosition)
 		if (fromPosition.x ~= CONTAINER_POSITION and toPosition.x ~= CONTAINER_POSITION) or tile and not tile:getHouse() then

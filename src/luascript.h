@@ -484,6 +484,7 @@ class LuaScriptInterface
 
 		static int luaDoAreaCombat(lua_State* L);
 		static int luaDoTargetCombat(lua_State* L);
+		static int luaDoTargetCombatExactDamage(lua_State* L);
 
 		static int luaDoChallengeCreature(lua_State* L);
 
@@ -586,6 +587,8 @@ class LuaScriptInterface
 		static int luaGameSetAccountStorageValue(lua_State* L);
 		static int luaGameSaveAccountStorageValues(lua_State* L);
 
+		static int luaGameGetClosestMonsterByName(lua_State* L);
+
 		// Variant
 		static int luaVariantCreate(lua_State* L);
 
@@ -646,6 +649,8 @@ class LuaScriptInterface
 		static int luaTileQueryAdd(lua_State* L);
 		static int luaTileAddItem(lua_State* L);
 		static int luaTileAddItemEx(lua_State* L);
+		static int luaTileConstructItem(lua_State* L);
+		static int luaTileConstructItemEx(lua_State* L);
 
 		static int luaTileGetHouse(lua_State* L);
 
@@ -757,6 +762,16 @@ class LuaScriptInterface
 
 		static int luaItemSetStoreItem(lua_State* L);
 		static int luaItemIsStoreItem(lua_State* L);
+
+		static int luaItemIsCreationItem(lua_State* L);
+		static int luaItemUpdateConstructionItem(lua_State* L);
+
+		static int luaItemDamageItem(lua_State* L);
+
+		static int luaItemSetWeight(lua_State* L);
+
+		static int luaItemGetDuration(lua_State* L);
+		static int luaItemSetDuration(lua_State* L);
 
 		// Container
 		static int luaContainerCreate(lua_State* L);
@@ -965,6 +980,9 @@ class LuaScriptInterface
 		static int luaPlayerAddItem(lua_State* L);
 		static int luaPlayerAddItemEx(lua_State* L);
 		static int luaPlayerRemoveItem(lua_State* L);
+		static int luaPlayerHasItem(lua_State* L);
+
+		static int luaPlayerUpdateInventoryWeight(lua_State* L);
 
 		static int luaPlayerGetMoney(lua_State* L);
 		static int luaPlayerAddMoney(lua_State* L);
@@ -1035,6 +1053,9 @@ class LuaScriptInterface
 		static int luaPlayerGetFightMode(lua_State* L);
 
 		static int luaPlayerGetStoreInbox(lua_State* L);
+
+		static int luaPlayerChangeStamina(lua_State* L);
+		static int luaPlayerUseStamina(lua_State* L);
 
 		// Monster
 		static int luaMonsterCreate(lua_State* L);
@@ -1245,6 +1266,9 @@ class LuaScriptInterface
 		static int luaItemTypeHasSubType(lua_State* L);
 
 		static int luaItemTypeIsStoreItem(lua_State* L);
+
+		static int luaItemTypeGetTileOrder(lua_State* L);
+
 
 		// Combat
 		static int luaCombatCreate(lua_State* L);

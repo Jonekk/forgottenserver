@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<randomspawns checkIntervalMs="1000" actionIdTag="65000">
+  <area id="test_spawn"
+        x="1032" y="983" z="7"
+        radius="6"
+        spawnChancePerCheck="0.30"
+        maxActive="10"
+        attemptsPerCheck="2">
+    <items>
+      <item id="2787" weight="70"/>   <!-- mushroom -->
+      <item id="2788" weight="20"/>
+      <item id="2789" weight="10"/>   <!-- gold coin -->
+    </items>
+  </area>
+
+</randomspawns>

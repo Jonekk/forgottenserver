@@ -145,6 +145,8 @@ class Container : public Item, public Cylinder
 		void internalAddThing(uint32_t index, Thing* thing) override final;
 		void startDecaying() override final;
 
+		void updateItemWeight(int32_t diff);
+
 	protected:
 		ItemDeque itemlist;
 
@@ -163,7 +165,6 @@ class Container : public Item, public Cylinder
 		void onRemoveContainerItem(uint32_t index, Item* item);
 
 		Container* getParentContainer();
-		void updateItemWeight(int32_t diff);
 
 		friend class ContainerIterator;
 		friend class IOMapSerialize;

@@ -110,6 +110,7 @@ class QTreeNode
 
 		QTreeLeafNode* createLeaf(uint32_t x, uint32_t y, uint32_t level);
 
+		QTreeNode* getChild(uint8_t id);
 	protected:
 		bool leaf = false;
 

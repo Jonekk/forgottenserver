@@ -59,6 +59,10 @@ struct Position
 		return std::abs(Position::getOffsetZ(p1, p2));
 	}
 
+	static int32_t getDistance2D(const Position& p1, const Position& p2) {
+		return sqrt(pow(Position::getOffsetX(p1, p2), 2) + pow(Position::getOffsetY(p1, p2), 2));
+	}
+
 	uint16_t x = 0;
 	uint16_t y = 0;
 	uint8_t z = 0;

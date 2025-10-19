@@ -216,6 +216,10 @@ Condition* Condition::createCondition(ConditionId_t id, ConditionType_t type, in
 		case CONDITION_PACIFIED:
 		case CONDITION_MANASHIELD:
 			return new ConditionGeneric(id, type, ticks, buff, subId, aggressive);
+		case CONDITION_STAMINA_REGEN:
+			return new ConditionStaminaRegen(id, type, ticks, buff, subId, aggressive);
+		case CONDITION_HUNGRY:
+			return new ConditionHungry(id, type, ticks, buff, subId, aggressive);
 
 		default:
 			return nullptr;
@@ -823,7 +827,20 @@ int32_t ConditionAttributes::getParam(ConditionParam_t param)
 	}
 }
 
-void ConditionRegeneration::addCondition(Creature*, const Condition* condition)
+bool ConditionRegeneration::startCondition(Creature* creature)
+{
+	if (!Condition::startCondition(creature)) {
+		return false;
+	}
+
+	if (getId() == CONDITIONID_DEFAULT) {
+		creature->removeCondition(CONDITION_HUNGRY);
+	}
+
+	return true;
+}
+
+void ConditionRegeneration::addCondition(Creature* creature, const Condition* condition)
 {
 	if (updateCondition(condition)) {
 		setTicks(condition->getTicks());
@@ -941,7 +958,11 @@ bool ConditionRegeneration::executeCondition(Creature* creature, int32_t interva
 		}
 	}
 
-	return ConditionGeneric::executeCondition(creature, interval);
+	bool keepCondition = ConditionGeneric::executeCondition(creature, interval);
+	if (!keepCondition) {
+		creature->getPlayer()->addCondition(Condition::createCondition(CONDITIONID_DEFAULT, CONDITION_HUNGRY, 5000, 0));
+	}
+	return keepCondition;
 }
 
 bool ConditionRegeneration::setParam(ConditionParam_t param, int32_t value)
@@ -988,6 +1009,168 @@ int32_t ConditionRegeneration::getParam(ConditionParam_t param)
 		default:
 			return ConditionGeneric::getParam(param);
 	}
+}
+
+void ConditionStaminaRegen::addCondition(Creature*, const Condition* condition)
+{
+	if (updateCondition(condition)) {
+		setTicks(condition->getTicks());
+
+		const ConditionStaminaRegen& conditionRegen = static_cast<const ConditionStaminaRegen&>(*condition);
+
+		staminaTicks = conditionRegen.staminaTicks;
+	}
+}
+
+bool ConditionStaminaRegen::unserializeProp(ConditionAttr_t attr, PropStream& propStream)
+{
+	if (attr == CONDITIONATTR_STAMINATICKS) {
+		return propStream.read<uint32_t>(staminaTicks);
+	} else if (attr == CONDITIONATTR_STAMINAGAIN) {
+		return propStream.read<uint32_t>(staminaGain);
+	}
+	return Condition::unserializeProp(attr, propStream);
+}
+
+void ConditionStaminaRegen::serialize(PropWriteStream& propWriteStream)
+{
+	Condition::serialize(propWriteStream);
+
+	propWriteStream.write<uint8_t>(CONDITIONATTR_STAMINATICKS);
+	propWriteStream.write<uint32_t>(staminaTicks);
+
+	propWriteStream.write<uint8_t>(CONDITIONATTR_STAMINAGAIN);
+	propWriteStream.write<uint32_t>(staminaGain);
+
+}
+
+bool ConditionStaminaRegen::executeCondition(Creature* creature, int32_t interval)
+{
+	internalStaminaTicks += interval;
+
+	if (creature->getZone() == ZONE_PROTECTION) {
+		return ConditionGeneric::executeCondition(creature, interval);
+	}
+
+	if (internalStaminaTicks >= staminaTicks) {
+		internalStaminaTicks = 0;
+		creature->changeStamina(staminaGain);
+	}
+	(void) ConditionGeneric::executeCondition(creature, interval);
+	return true; // keep forever
+}
+
+bool ConditionStaminaRegen::setParam(ConditionParam_t param, int32_t value)
+{
+	bool ret = ConditionGeneric::setParam(param, value);
+
+	switch (param) {
+		case CONDITION_PARAM_STAMINAGAIN:
+			staminaGain = value;
+			return true;
+
+		case CONDITION_PARAM_STAMINATICKS:
+			staminaTicks = value;
+			return true;
+
+		default:
+			return ret;
+	}
+}
+
+int32_t ConditionStaminaRegen::getParam(ConditionParam_t param)
+{
+	switch (param) {
+		case CONDITION_PARAM_STAMINAGAIN:
+			return staminaGain;
+
+		case CONDITION_PARAM_STAMINATICKS:
+			return staminaTicks;
+
+		default:
+			return ConditionGeneric::getParam(param);
+	}
+}
+
+void ConditionHungry::addCondition(Creature*, const Condition* condition)
+{
+	if (updateCondition(condition)) {
+		setTicks(condition->getTicks());
+	}
+}
+
+bool ConditionHungry::unserializeProp(ConditionAttr_t attr, PropStream& propStream)
+{
+	if (attr == CONDITIONATTR_HUNGRYTOTALTICKS) {
+		return propStream.read<uint32_t>(hungryTotalTicks);
+	}
+	return Condition::unserializeProp(attr, propStream);
+}
+
+void ConditionHungry::serialize(PropWriteStream& propWriteStream)
+{
+	Condition::serialize(propWriteStream);
+
+	propWriteStream.write<uint8_t>(CONDITIONATTR_HUNGRYTOTALTICKS);
+	propWriteStream.write<uint32_t>(hungryTotalTicks);
+}
+
+bool ConditionHungry::executeCondition(Creature* creature, int32_t interval)
+{
+	Player *player = creature->getPlayer();
+	if (!player) return false;
+
+	internalHungryTicks += interval;
+	hungryTotalTicks += interval;
+
+	if (internalHungryTicks > hungryTicks) {
+		//creature->drainHealth(nullptr, isStarving() ? 2 : 1);
+		CombatDamage combatDamage = {
+			.primary = {
+				.type = COMBAT_PHYSICALDAMAGE_NO_BLOOD,
+				.value = isStarving() ? -2 : -1
+			},
+			.origin = ORIGIN_CONDITION,
+		};
+		g_game.combatChangeHealth(nullptr, player, combatDamage);
+		internalHungryTicks = 0;
+		if (isStarving()) {
+			player->sendIcons();
+		}
+	}
+
+	(void) ConditionGeneric::executeCondition(creature, interval);
+	return true; // keep forever
+}
+
+bool ConditionHungry::setParam(ConditionParam_t param, int32_t value)
+{
+	bool ret = ConditionGeneric::setParam(param, value);
+
+	switch (param) {
+		case CONDITION_PARAM_HUNGER_TOTAL_TICKS:
+		hungryTotalTicks = value;
+			return true;
+
+		default:
+			return ret;
+	}
+}
+
+int32_t ConditionHungry::getParam(ConditionParam_t param)
+{
+	switch (param) {
+		case CONDITION_PARAM_HUNGER_TOTAL_TICKS:
+			return hungryTotalTicks;
+
+		default:
+			return ConditionGeneric::getParam(param);
+	}
+}
+
+bool ConditionHungry::isStarving()
+{
+	return hungryTotalTicks > 30 * 1000;
 }
 
 void ConditionSoul::addCondition(Creature*, const Condition* condition)

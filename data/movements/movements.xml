@@ -24,6 +24,9 @@
 	<movevent event="RemoveItem" itemid="2579" script="trap.lua" />
 	<movevent event="StepIn" itemid="4208" script="trap.lua" />
 	<movevent event="StepIn" itemid="25331" script="trap.lua" />
+	<movevent event="StepIn" itemid="26422" script="trap.lua" />
+	<movevent event="StepIn" itemid="26424" script="trap.lua" />
+	<movevent event="StepIn" itemid="26426" script="trap.lua" />
 
 	<!-- Citizen teleport -->
 	<movevent event="StepIn" itemid="1387" script="citizen.lua" />

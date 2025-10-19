@@ -107,6 +107,87 @@ local foods = {
 	[26201] = {15, "Mmmm."} -- energy drink
 }
 
+local FoodEffects = {
+	STAMINA = 1,
+	HEALTH = 2,
+	MANA = 3, -- not implemented
+	HASTE = 4, -- not implemented
+	HEALTH_REGEN = 5, -- not implemented
+	STAMINA_REGEN = 6, -- not implemented
+	MANA_REGEN = 7, -- not implemented
+}
+
+-- chanceThreshold: (quality - chanceThreshold) = % chance for this effect
+foodSpecialEffects = {
+	[2666] = { -- meat
+		--[FoodEffects.STAMINA] = {chanceThreshold = 80, amount = 5},
+		[FoodEffects.HEALTH] = {chanceThreshold = 90, amount = 6},
+		--[FoodEffects.HASTE] = {chanceThreshold = 50, amount = 20, time = 30},
+		--[FoodEffects.HEALTH_REGEN] = {chanceThreshold = 50, amount = 2, time = 30, tick = 2},
+	},
+	[2677] = { -- blueberry
+		[FoodEffects.STAMINA] = {chanceThreshold = 95, amount = 1},
+	},
+	[2680] = { -- strawberry
+		[FoodEffects.HASTE] = {chanceThreshold = 90, amount = 20, time = 30},
+	},
+}
+local function specialFoodEffect(player, item)
+	local effectsList = foodSpecialEffects[item:getId()]
+	if not effectsList then
+		return false
+	end
+	for effectId, effectInfo in pairs(effectsList) do
+		local itemQuality = item:getCustomAttribute("quality")
+		if not itemQuality then itemQuality = 100 end
+
+		local randomval = math.random(100)
+		if (itemQuality - effectInfo.chanceThreshold) > randomval then
+			if effectId == FoodEffects.HEALTH then
+				local healthBefore = player:getHealth()
+				doTargetCombatExactDamage(0, player, COMBAT_HEALING, round(gaussianRandom50p(effectInfo.amount)))
+				local healthChange = player:getHealth() - healthBefore
+
+				-- TFS will automatically send info that "you were healed for x", no need to duplicate that
+				-- if healthChange > 0 then
+				-- 	player:sendTextMessage(MESSAGE_HEALED, "Eating " .. item:getName() .. " recovered " .. healthChange .. " hitpoints.")
+				-- end
+			elseif effectId == FoodEffects.STAMINA then
+				local staminaChange = player:changeStamina(math.max(1, round(gaussianRandom50p(effectInfo.amount))))
+				if staminaChange and staminaChange > 0 then
+					player:sendTextMessage(MESSAGE_HEALED, "Eating " .. item:getName() .. " recovered " .. staminaChange .. " stamina points.")
+				end
+			elseif effectId == FoodEffects.MANA then
+				-- not implemented
+			elseif effectId == FoodEffects.HASTE then
+				local hasteCondition = Condition(CONDITION_HASTE, CONDITIONID_FOOD)
+				local hasteTime = round(gaussianRandom50p(effectInfo.time))
+				local hasteSpeed = round(gaussianRandom50p(effectInfo.amount))
+				hasteCondition:setTicks(gaussianRandom50p(hasteTime * 1000))
+				hasteCondition:setParameter(CONDITION_PARAM_SPEED, round(gaussianRandom50p(hasteSpeed)))
+				player:addCondition(hasteCondition)
+				player:sendTextMessage(MESSAGE_HEALED, "Eating " .. item:getName() .. " makes you move " .. hasteSpeed .. " points faster for " .. hasteTime .. " seconds.")
+			elseif effectId == FoodEffects.HEALTH_REGEN then
+				local regenCondition = Condition(CONDITION_REGENERATION, CONDITIONID_FOOD)
+				local regenTime = math.max(round(gaussianRandom50p(effectInfo.time)), 1)
+				local regenAmount = math.max(round(gaussianRandom50p(effectInfo.amount)), 1)
+				local regenTick = math.max(round(gaussianRandom50p(effectInfo.tick)), 1)
+				regenCondition:setParameter(CONDITION_PARAM_TICKS, regenTime * 1000)
+				regenCondition:setParameter(CONDITION_PARAM_HEALTHGAIN, regenAmount)
+				regenCondition:setParameter(CONDITION_PARAM_HEALTHTICKS, regenTick * 1000)
+				regenCondition:setParameter(CONDITION_PARAM_BUFF_SPELL, true)
+				player:addCondition(regenCondition)
+				player:sendTextMessage(MESSAGE_HEALED, "Eating " .. item:getName() .. " makes you regenerate health faster for " .. regenTime .. " seconds.")
+			elseif effectId == FoodEffects.STAMINA_REGEN then
+				-- not implemented
+			elseif effectId == FoodEffects.MANA_REGEN then
+				-- not implemented
+			end
+		end
+	end
+end
+
+-- 
 function onUse(player, item, fromPosition, target, toPosition, isHotkey)
 	local food = foods[item.itemid]
 	if not food then
@@ -114,11 +195,12 @@ function onUse(player, item, fromPosition, target, toPosition, isHotkey)
 	end
 
 	local condition = player:getCondition(CONDITION_REGENERATION, CONDITIONID_DEFAULT)
-	if condition and math.floor(condition:getTicks() / 1000 + (food[1] * 12)) >= 1200 then
+	if condition and math.floor(condition:getTicks() / 1000 + (food[1] * 12)) >= 2400 then
 		player:sendTextMessage(MESSAGE_STATUS_SMALL, "You are full.")
 	else
 		player:feed(food[1] * 12)
 		player:say(food[2], TALKTYPE_MONSTER_SAY)
+		specialFoodEffect(player, item)
 		item:remove(1)
 	end
 	return true

@@ -50,4 +50,12 @@
 	<!-- test talkactions -->
 	<talkaction words="!z" separator=" " script="magiceffect.lua" />
 	<talkaction words="!x" separator=" " script="animationeffect.lua" />
+	<talkaction words="!craft" separator=" " script="crafting.lua" />
+	<talkaction words="!construct" separator=" " script="crafting_construction.lua" />
+	<talkaction words="!cook" separator=" " script="crafting_cook.lua" />
+	<talkaction words="!farm" separator=" " script="crafting_farming.lua" />
+	<talkaction words="!hunt" separator=" " script="hunt.lua" />
+	<talkaction words="!lua" separator=" " script="lua_console.lua" />
+
+	<talkaction words="!stamina" separator=" " script="stamina.lua" />
 </talkactions>

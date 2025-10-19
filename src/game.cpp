@@ -25,6 +25,8 @@
 #include "talkaction.h"
 #include "weapons.h"
 #include "script.h"
+#include "randomitemspawner.hpp"
+
 
 #include <fmt/format.h>
 
@@ -41,6 +43,7 @@ extern Monsters g_monsters;
 extern MoveEvents* g_moveEvents;
 extern Weapons* g_weapons;
 extern Scripts* g_scripts;
+extern RandomItemSpawner g_randomItemSpawner;
 
 Game::Game()
 {
@@ -73,6 +76,7 @@ void Game::start(ServiceManager* manager)
 	}
 	g_scheduler.addEvent(createSchedulerTask(EVENT_CREATURE_THINK_INTERVAL, std::bind(&Game::checkCreatures, this, 0)));
 	g_scheduler.addEvent(createSchedulerTask(EVENT_DECAYINTERVAL, std::bind(&Game::checkDecay, this)));
+	g_scheduler.addEvent(createSchedulerTask(EVENT_RANDOMSPAWN, std::bind(&Game::checkRandomSpawn, this)));
 }
 
 GameState_t Game::getGameState() const
@@ -102,6 +106,7 @@ void Game::setGameState(GameState_t newState)
 			g_chat->load();
 
 			map.spawns.startup();
+			g_randomItemSpawner.start();
 
 			raids.loadFromXml();
 			raids.startup();
@@ -379,6 +384,29 @@ Monster* Game::getMonsterByID(uint32_t id)
 		return nullptr;
 	}
 	return it->second;
+}
+
+Monster* Game::getClosestMonsterByName(const Position& pos, const std::string& name)
+{
+    Monster* closestMonster = nullptr;
+    int32_t closestDistance = std::numeric_limits<int32_t>::max();
+
+    for (const auto& pair : monsters) {
+        Monster* monster = pair.second;
+        if (!monster || monster->isInvisible()) {
+            continue;
+        }
+
+        if (!strcasecmp(monster->getName().c_str(), name.c_str())) {
+            int32_t dist = Position::getDistance2D(pos, monster->getPosition());
+            if (dist < closestDistance) {
+                closestDistance = dist;
+                closestMonster = monster;
+            }
+        }
+    }
+
+    return closestMonster;
 }
 
 Npc* Game::getNpcByID(uint32_t id)
@@ -1281,6 +1309,217 @@ ReturnValue Game::internalAddItem(Cylinder* toCylinder, Item* item, int32_t inde
 	return internalAddItem(toCylinder, item, index, flags, test, remainderCount);
 }
 
+int Game::loadCreationItems()
+{
+	int items_count = 0;
+	Database& db = Database::getInstance();
+	if (DBResult_ptr result = db.storeQuery(fmt::format("SELECT `id`, `builder_id`, `itemtype`, `posx`, `posy`, `posz`, `attributes` FROM `creation_items`"))) {
+		do {
+			uint32_t id = result->getNumber<uint32_t>("id");
+			uint32_t builder_id = result->getNumber<uint32_t>("builder_id");
+			uint32_t itemtype = result->getNumber<uint16_t>("itemtype");
+			uint16_t posx = result->getNumber<int32_t>("posx");
+			uint16_t posy = result->getNumber<int32_t>("posy");
+			uint16_t posz = result->getNumber<int32_t>("posz");
+	
+			unsigned long attrSize;
+			const char* attr = result->getStream("attributes", attrSize);
+	
+			PropStream propStream;
+			propStream.init(attr, attrSize);
+	
+			Item* item = Item::CreateItem(itemtype);
+			if (item) {
+				if (!item->unserializeAttr(propStream)) {
+					std::cout << "WARNING: Serialize error in Game::loadCreationItems" << std::endl;
+				}
+				item->setCreationId(id);
+				item->setCreationBuilder(builder_id);
+				addConstructionItem(item, posx, posy, posz);
+			}
+			items_count++;
+		} while (result->next());
+	}
+	return items_count;
+}
+
+bool Game::internalAddConstructionItemToDb(Item *item)
+{
+	Database& db = Database::getInstance();
+
+	DBTransaction transaction;
+	if (!transaction.begin()) {
+		return false;
+	}
+
+	DBInsert itemsQuery("INSERT INTO `creation_items` (`builder_id`, `itemtype`, `posx`, `posy`, `posz`, `attributes`) VALUES ");
+	const Position pos = item->getPosition();
+	if (pos == Tile::nullptr_tile.getPosition()) {
+		return false;
+	}
+	PropWriteStream propWriteStream;
+	item->serializeAttr(propWriteStream);
+
+	size_t attributesSize;
+	const char* attributes = propWriteStream.getStream(attributesSize);
+
+	if (!itemsQuery.addRow(fmt::format("{:d}, {:d}, {:d}, {:d}, {:d}, {:s}", item->getCreationBuilder(), item->getID(), pos.getX(), pos.getY(), pos.getZ(), db.escapeBlob(attributes, attributesSize)))) {
+		return false;
+	}
+	itemsQuery.execute();
+	item->setCreationId(db.getLastInsertId());
+	//End the transaction
+	return transaction.commit();
+}
+
+bool Game::internalUpdateConstructionItemInDb(Item *item)
+{
+	Database& db = Database::getInstance();
+
+	DBTransaction transaction;
+	if (!transaction.begin()) {
+		return false;
+	}
+
+	const Position pos = item->getPosition();
+	if (pos == Tile::nullptr_tile.getPosition()) {
+		return false;
+	}
+	PropWriteStream propWriteStream;
+	item->serializeAttr(propWriteStream);
+
+	size_t attributesSize;
+	const char* attributes = propWriteStream.getStream(attributesSize);
+
+	db.executeQuery(fmt::format("UPDATE `creation_items` SET `builder_id` = {:d}, `itemtype` = {:d}, `posx` = {:d}, `posy` = {:d}, `posz` = {:d}, `attributes` = {:s} WHERE `id` = {:d}", item->getCreationBuilder(), item->getID(), pos.getX(), pos.getY(), pos.getZ(), db.escapeBlob(attributes, attributesSize), item->getCreationId()));
+
+	//End the transaction
+	return transaction.commit();
+}
+
+bool Game::internalRemoveConstructionItemFromDb(Item *item)
+{
+	Database& db = Database::getInstance();
+
+	DBTransaction transaction;
+	if (!transaction.begin()) {
+		return false;
+	}
+
+	db.executeQuery(fmt::format("DELETE FROM `creation_items` WHERE `id` = {:d}", item->getCreationId()));
+
+	//End the transaction
+	return transaction.commit();
+}
+
+bool Game::addConstructionItem(Item *item, int32_t x, int32_t y, int32_t z)
+{
+	Tile* tile = map.getTile(x, y, z);
+	return addConstructionItem(tile, item);
+}
+
+bool Game::addConstructionItem(Tile* tile, Item* item, int32_t index /*= INDEX_WHEREEVER*/,
+	uint32_t flags/* = 0*/, bool test/* = false*/)
+{
+	if (tile == nullptr || item == nullptr) {
+		return false;
+	}
+
+	if (!tile->isConstructionAllowed()) return false;
+	tile->addThing(index, item);
+
+	int32_t itemIndex = tile->getThingIndex(item);
+	if (itemIndex != -1) {
+		tile->postAddNotification(item, nullptr, itemIndex);
+	}
+
+	if (item->getDuration() > 0) {
+		item->incrementReferenceCounter();
+		item->setDecaying(DECAYING_TRUE);
+		toDecayItems.push_front(item);
+	}
+
+	while (Item *topDownThing = tile->getTopDownItem())
+	{
+		if (topDownThing == item) break;
+		internalRemoveItem(topDownThing);
+	}
+
+	if (item->isGroundTile()) {
+		buildConstructionItemSurroundings(item->getTile(), item);
+	}
+
+	return true;
+}
+
+ReturnValue Game::constructItem(Tile* tile, Item* item, int32_t index /*= INDEX_WHEREEVER*/,
+	uint32_t flags/* = 0*/, bool test/* = false*/)
+{
+	if (!addConstructionItem(tile, item, index, flags, test)) {
+		return RETURNVALUE_NOTPOSSIBLE;
+	}
+	
+	internalAddConstructionItemToDb(item);
+
+	return RETURNVALUE_NOERROR;
+}
+#include "borders.h"
+bool Game::buildConstructionItemSurroundings(Tile* tile, Item* item)
+{
+	const int16_t soilId = 804;
+	if (item->getID() != soilId) {
+		return true;
+	}
+
+	const int16_t dirtId = 103;
+	const Position pos = tile->getPosition();
+	
+	// first remove border from center
+	Item *oldBorder = tile->getItemByTopOrder(1);
+	if (oldBorder) {
+		tile->removeThing(oldBorder, 1);
+	}
+
+	// add dirt tiles around
+	for (int x = pos.x - 1; x <= pos.x + 1; x++) {
+		for (int y = pos.y - 1; y <= pos.y + 1; y++) {
+			if (x == pos.x && y == pos.y) continue;
+
+			Tile * tile = map.getTile(x, y, pos.z);
+			if (tile->getGround()->getID() != soilId) {
+				internalRemoveItem(tile->getGround());
+				Item* dirtItem = Item::CreateItem(dirtId);
+				tile->addThing(INDEX_WHEREEVER, dirtItem);
+				tile->setGround(dirtItem);
+			}
+		}
+	}
+
+	// add borders in tiles around
+	for (int x = pos.x - 1; x <= pos.x + 1; x++) {
+		for (int y = pos.y - 1; y <= pos.y + 1; y++) {
+			if (x == pos.x && y == pos.y) continue;
+			Tile * tile = map.getTile(x, y, pos.z);
+			addGrassBorders(&map, tile);
+		}
+	}
+
+    const int size = 5;
+    const int offset = size / 2;
+    
+    for (int dx = -offset; dx <= offset; dx++) {
+        for (int dy = -offset; dy <= offset; dy++) {
+            // Check if on outer border (at least one coordinate at min/max)
+            if (abs(dx) == offset || abs(dy) == offset) {
+				Tile * tile = map.getTile(pos.x + dx, pos.y + dy, pos.z);
+				addGrassBorders(&map, tile);
+            }
+        }
+    }
+
+	return true;
+}
+
 ReturnValue Game::internalAddItem(Cylinder* toCylinder, Item* item, int32_t index,
                                   uint32_t flags, bool test, uint32_t& remainderCount)
 {
@@ -1392,6 +1631,13 @@ ReturnValue Game::internalRemoveItem(Item* item, int32_t count /*= -1*/, bool te
 	if (!item->canRemove()) {
 		return RETURNVALUE_NOTPOSSIBLE;
 	}
+
+	if (item->isCreationItem()) {
+		std::cout << "Removing item from db..." << item->getID();
+		internalRemoveConstructionItemFromDb(item);
+	}
+
+	g_randomItemSpawner.onItemRemoved(item);
 
 	if (!test) {
 		int32_t index = cylinder->getThingIndex(item);
@@ -1725,7 +1971,7 @@ Item* Game::transformItem(Item* item, uint16_t newId, int32_t newCount /*= -1*/)
 	if (newItem == nullptr) {
 		return nullptr;
 	}
-
+	newItem->moveCreationDataFrom(item);
 	cylinder->replaceThing(itemIndex, newItem);
 	cylinder->postAddNotification(newItem, cylinder, itemIndex);
 
@@ -3824,6 +4070,7 @@ bool Game::combatBlockHit(CombatDamage& damage, Creature* attacker, Creature* ta
 				case COMBAT_ENERGYDAMAGE:
 				case COMBAT_FIREDAMAGE:
 				case COMBAT_PHYSICALDAMAGE:
+				case COMBAT_PHYSICALDAMAGE_NO_BLOOD:
 				case COMBAT_ICEDAMAGE:
 				case COMBAT_DEATHDAMAGE: {
 					hitEffect = CONST_ME_BLOCKHIT;
@@ -3874,6 +4121,7 @@ bool Game::combatBlockHit(CombatDamage& damage, Creature* attacker, Creature* ta
 void Game::combatGetTypeInfo(CombatType_t combatType, Creature* target, TextColor_t& color, uint8_t& effect)
 {
 	switch (combatType) {
+		case COMBAT_PHYSICALDAMAGE_NO_BLOOD:
 		case COMBAT_PHYSICALDAMAGE: {
 			Item* splash = nullptr;
 			switch (target->getRace()) {
@@ -3885,9 +4133,11 @@ void Game::combatGetTypeInfo(CombatType_t combatType, Creature* target, TextColo
 				case RACE_BLOOD:
 					color = TEXTCOLOR_RED;
 					effect = CONST_ME_DRAWBLOOD;
-					if (const Tile* tile = target->getTile()) {
-						if (!tile->hasFlag(TILESTATE_PROTECTIONZONE)) {
-							splash = Item::CreateItem(ITEM_SMALLSPLASH, FLUID_BLOOD);
+					if (combatType != COMBAT_PHYSICALDAMAGE_NO_BLOOD) {
+						if (const Tile* tile = target->getTile()) {
+							if (!tile->hasFlag(TILESTATE_PROTECTIONZONE)) {
+								splash = Item::CreateItem(ITEM_SMALLSPLASH, FLUID_BLOOD);
+							}
 						}
 					}
 					break;
@@ -4524,8 +4774,15 @@ void Game::internalDecayItem(Item* item)
 {
 	const ItemType& it = Item::items[item->getID()];
 	if (it.decayTo != 0) {
-		Item* newItem = transformItem(item, item->getDecayTo());
-		startDecay(newItem);
+		item->onDecay();
+		if (item->getDecayTo() == item->getID()) {
+			item->setDefaultDuration();
+			item->setDecaying(DECAYING_PENDING);
+			startDecay(item);
+		} else {
+			Item* newItem = transformItem(item, item->getDecayTo());
+			startDecay(newItem);
+		}
 	} else {
 		ReturnValue ret = internalRemoveItem(item);
 		if (ret != RETURNVALUE_NOERROR) {
@@ -4578,6 +4835,11 @@ void Game::checkDecay()
 	cleanup();
 }
 
+void Game::checkRandomSpawn()
+{
+
+}
+
 void Game::checkLight()
 {
 	g_scheduler.addEvent(createSchedulerTask(EVENT_LIGHTINTERVAL, std::bind(&Game::checkLight, this)));
@@ -4595,14 +4857,32 @@ void Game::checkLight()
 
 void Game::updateWorldLightLevel()
 {
+	switch (getTimeOfDay()) {
+		case TOD_SUNRISE:
+			lightLevel = ((GAME_DAYTIME - GAME_SUNRISE) - (GAME_DAYTIME - getWorldTime())) * float(LIGHT_CHANGE_SUNRISE) + LIGHT_NIGHT;
+			break;
+		case TOD_SUNSET:
+			lightLevel = LIGHT_DAY - ((getWorldTime() - GAME_SUNSET) * float(LIGHT_CHANGE_SUNSET));
+			break;
+		case TOD_NIGHT:
+			lightLevel = LIGHT_NIGHT;
+		break;
+		case TOD_DAY:
+			lightLevel = LIGHT_DAY;
+		break;
+	}
+}
+
+Game::TimeOfDay Game::getTimeOfDay()
+{
 	if (getWorldTime() >= GAME_SUNRISE && getWorldTime() <= GAME_DAYTIME) {
-		lightLevel = ((GAME_DAYTIME - GAME_SUNRISE) - (GAME_DAYTIME - getWorldTime())) * float(LIGHT_CHANGE_SUNRISE) + LIGHT_NIGHT;
+		return TOD_SUNRISE;
 	} else if (getWorldTime() >= GAME_SUNSET && getWorldTime() <= GAME_NIGHTTIME) {
-		lightLevel = LIGHT_DAY - ((getWorldTime() - GAME_SUNSET) * float(LIGHT_CHANGE_SUNSET));
+		return TOD_SUNSET;
 	} else if (getWorldTime() >= GAME_NIGHTTIME || getWorldTime() < GAME_SUNRISE) {
-		lightLevel = LIGHT_NIGHT;
+		return TOD_NIGHT;
 	} else {
-		lightLevel = LIGHT_DAY;
+		return TOD_DAY;
 	}
 }
 

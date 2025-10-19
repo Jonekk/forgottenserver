@@ -73,6 +73,10 @@ function onUse(player, item, fromPosition, target, toPosition, isHotkey)
 			end
 		elseif item.type == 0 then
 			player:sendTextMessage(MESSAGE_STATUS_SMALL, "It is empty.")
+		elseif item.type == 1 and isFarmingCareItem(target) then
+			if waterFarmingItem(player, item, target) then
+				item:transform(item:getId(), 0)
+			end
 		else
 			if toPosition.x == CONTAINER_POSITION then
 				toPosition = player:getPosition()

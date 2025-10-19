@@ -51,6 +51,7 @@ static constexpr int32_t EVENT_LIGHTINTERVAL = 10000;
 static constexpr int32_t EVENT_WORLDTIMEINTERVAL = 2500;
 static constexpr int32_t EVENT_DECAYINTERVAL = 250;
 static constexpr int32_t EVENT_DECAY_BUCKETS = 4;
+static constexpr int32_t EVENT_RANDOMSPAWN = 5000;
 
 /**
   * Main Game class.
@@ -74,6 +75,7 @@ class Game
 
 		bool loadMainMap(const std::string& filename);
 		void loadMap(const std::string& path);
+		int loadCreationItems();
 
 		/**
 		  * Get the map size - info purpose only
@@ -110,6 +112,8 @@ class Game
 		  * \returns A Monster pointer to the monster
 		  */
 		Monster* getMonsterByID(uint32_t id);
+
+		Monster* getClosestMonsterByName(const Position& pos, const std::string& name);
 
 		/**
 		  * Returns an npc based on the unique creature identifier
@@ -220,6 +224,20 @@ class Game
 			}
 		}
 		void updateWorldLightLevel();
+		typedef enum {
+			TOD_SUNRISE,
+			TOD_DAY,
+			TOD_SUNSET,
+			TOD_NIGHT,
+		} TimeOfDay;
+
+		TimeOfDay getTimeOfDay();
+
+		bool addConstructionItem(Item *item, int32_t x, int32_t y, int32_t z);
+		bool addConstructionItem(Tile* tile, Item* item, int32_t index = INDEX_WHEREEVER,
+			uint32_t flags = 0, bool test = false);
+		bool buildConstructionItemSurroundings(Tile* tile, Item* item);
+
 
 		ReturnValue internalMoveCreature(Creature* creature, Direction direction, uint32_t flags = 0);
 		ReturnValue internalMoveCreature(Creature& creature, Tile& toTile, uint32_t flags = 0);
@@ -227,6 +245,11 @@ class Game
 		ReturnValue internalMoveItem(Cylinder* fromCylinder, Cylinder* toCylinder, int32_t index,
 		                             Item* item, uint32_t count, Item** _moveItem, uint32_t flags = 0, Creature* actor = nullptr, Item* tradeItem = nullptr, const Position* fromPos = nullptr, const Position* toPos = nullptr);
 
+		ReturnValue constructItem(Tile* tile, Item* item, int32_t index = INDEX_WHEREEVER,
+										uint32_t flags = 0, bool test = false);
+		ReturnValue updateConstructionItem(Item* item) {
+			return internalUpdateConstructionItemInDb(item) ? RETURNVALUE_NOERROR : RETURNVALUE_NOTPOSSIBLE;
+		}
 		ReturnValue internalAddItem(Cylinder* toCylinder, Item* item, int32_t index = INDEX_WHEREEVER,
 		                            uint32_t flags = 0, bool test = false);
 		ReturnValue internalAddItem(Cylinder* toCylinder, Item* item, int32_t index,
@@ -424,6 +447,7 @@ class Game
 		void checkCreatureAttack(uint32_t creatureId);
 		void checkCreatures(size_t index);
 		void checkLight();
+		void checkRandomSpawn();
 
 		bool combatBlockHit(CombatDamage& damage, Creature* attacker, Creature* target, bool checkDefense, bool checkArmor, bool field, bool ignoreResistances = false);
 
@@ -511,6 +535,10 @@ class Game
 		}
 
 	private:
+		bool internalAddConstructionItemToDb(Item *item);
+		bool internalUpdateConstructionItemInDb(Item *item);
+		bool internalRemoveConstructionItemFromDb(Item *item);
+
 		bool playerSaySpell(Player* player, SpeakClasses type, const std::string& text);
 		void playerWhisper(Player* player, const std::string& text);
 		bool playerYell(Player* player, const std::string& text);
@@ -555,10 +583,11 @@ class Game
 		// 1h realtime   = 1day worldtime
 		// 2.5s realtime = 1min worldtime
 		// worldTime is calculated in minutes
-		static constexpr int16_t GAME_SUNRISE = 360;
-		static constexpr int16_t GAME_DAYTIME = 480;
-		static constexpr int16_t GAME_SUNSET = 1080;
-		static constexpr int16_t GAME_NIGHTTIME = 1200;
+		// minutes - 0-1439
+		static constexpr int16_t GAME_SUNRISE = 360; 	// 120min
+		static constexpr int16_t GAME_DAYTIME = 480; 	// 600min
+		static constexpr int16_t GAME_SUNSET = 1080; 	// 120min
+		static constexpr int16_t GAME_NIGHTTIME = 1200; // 600min
 		static constexpr float LIGHT_CHANGE_SUNRISE = static_cast<int>(float(float(LIGHT_DAY - LIGHT_NIGHT) / float(GAME_DAYTIME - GAME_SUNRISE)) * 100) / 100.0f;
 		static constexpr float LIGHT_CHANGE_SUNSET = static_cast<int>(float(float(LIGHT_DAY - LIGHT_NIGHT) / float(GAME_NIGHTTIME - GAME_SUNSET)) * 100) / 100.0f;
 

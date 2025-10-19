@@ -24,12 +24,16 @@
 	<action itemid="2553" script="tools/pick.lua" />
 	<action itemid="2566" script="tools/kitchen_knife.lua" />
 	<action itemid="2580" script="tools/fishing.lua" allowfaruse="1" />
-	<action itemid="2554" script="tools/shovel.lua" />
-	<action itemid="5710" script="tools/shovel.lua" />
+	
+	<action itemid="2554" script="survival/shovel.lua" />
+	<action itemid="5710" script="survival/shovel.lua" />
 	<action itemid="7731" script="tools/rope.lua" />
 	<action itemid="10511" script="tools/tool_gear.lua" />
 	<action itemid="10513" script="tools/tool_gear.lua" />
 	<action itemid="10515" script="tools/tool_gear.lua" />
+	<action itemid="2398" script="tools/weapons.lua" />
+	<action itemid="2391" script="tools/weapons.lua" />
+	
 
 	<!-- Transform and decay -->
 	<action fromid="1873" toid="1876" script="other/decayto.lua" />
@@ -157,7 +161,7 @@
 	<action itemid="2148" script="other/change_gold.lua" />
 	<action itemid="2152" script="other/change_gold.lua" />
 	<action itemid="2160" script="other/change_gold.lua" />
-	<action fromid="2376" toid="2404" script="other/destroy.lua" />
+	<!-- <action fromid="2376" toid="2404" script="other/destroy.lua" /> -->
 	<action fromid="2406" toid="2415" script="other/destroy.lua" />
 	<action fromid="2417" toid="2419" script="other/destroy.lua" />
 	<action fromid="2421" toid="2441" script="other/destroy.lua" />
@@ -165,7 +169,6 @@
 	<action itemid="2579" script="other/trap.lua" />
 	<action itemid="2692" script="other/create_bread.lua" />
 	<action itemid="2694" script="other/create_bread.lua" />
-	<action itemid="2785" script="other/blueberry_bush.lua" />
 	<action itemid="3678" script="other/teleport.lua" />
 	<action itemid="3900" script="other/watch.lua" />
 	<action itemid="5543" script="other/teleport.lua" />
@@ -179,4 +182,46 @@
 	<action fromid="9443" toid="9444" script="other/watch.lua" />
 	<action fromid="18488" toid="18492" script="other/skill_trainer.lua" />
 	<action itemid="20252" script="other/bed_modification_kits.lua" />
+
+	<action itemid="2784" script="survival/gathering.lua" />
+	<action itemid="2770" script="survival/gathering.lua" />
+	<action itemid="3985" script="survival/gathering.lua" />
+	<action itemid="26387" script="survival/blueprint.lua" />
+
+	<action itemid="26390" script="survival/tools.lua" /> <!-- axe -->
+	<action itemid="26389" script="survival/tools.lua" /> <!-- pick -->
+
+	<action itemid="26402" script="survival/blueprint_construction.lua" />
+	<action itemid="26403" script="survival/blueprint_construction_ready.lua" />
+
+
+	<action itemid="1421" script="survival/fire_sources.lua" />
+	<action itemid="1424" script="survival/fire_sources.lua" />
+	<action fromid="1786" toid="1793" script="survival/fire_sources.lua" />
+
+	<action itemid="26405" script="survival/blueprint_cooking.lua" />
+	<action itemid="26406" script="survival/blueprint_cooking_ready.lua" />
+
+	<action itemid="26407" script="survival/blueprint_farming.lua" />
+	<action itemid="26410" script="survival/blueprint_farming_ready.lua" />
+
+	<action itemid="26411" script="survival/fertilizer.lua" />
+
+	<action itemid="2785" script="survival/farming_gathering.lua" />
+	<action itemid="26409" script="survival/farming_gathering.lua" />
+
+	<action itemid="26416" script="survival/knife.lua" />
+
+	<action itemid="26417" script="survival/trace.lua" />
+	<action itemid="26418" script="survival/trace.lua" />
+	<action itemid="26419" script="survival/trace.lua" />
+	<action itemid="26420" script="survival/trace.lua" />
+
+	<action itemid="26421" script="survival/trap.lua" />
+	<action itemid="26422" script="survival/trap_open.lua" />
+	<action itemid="26423" script="survival/trap.lua" />
+	<action itemid="26424" script="survival/trap_open.lua" />
+	<action itemid="26425" script="survival/trap.lua" />
+	<action itemid="26426" script="survival/trap_open.lua" />
+	
 </actions>

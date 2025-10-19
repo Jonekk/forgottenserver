@@ -172,6 +172,8 @@ class Tile : public Cylinder
 		Item* getTopDownItem() const;
 		bool isMoveableBlocking() const;
 		Thing* getTopVisibleThing(const Creature* creature);
+
+		Item* getItemById(uint16_t id) const;
 		Item* getItemByTopOrder(int32_t topOrder);
 
 		size_t getThingCount() const {
@@ -265,6 +267,8 @@ class Tile : public Cylinder
 		void setGround(Item* item) {
 			ground = item;
 		}
+
+		bool isConstructionAllowed();
 
 	private:
 		void onAddTileItem(Item* item);

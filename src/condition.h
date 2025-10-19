@@ -42,6 +42,9 @@ enum ConditionAttr_t {
 	CONDITIONATTR_ISAGGRESSIVE,
 	CONDITIONATTR_DISABLEDEFENSE,
 	CONDITIONATTR_SPECIALSKILLS,
+	CONDITIONATTR_STAMINATICKS,
+	CONDITIONATTR_STAMINAGAIN,
+	CONDITIONATTR_HUNGRYTOTALTICKS,
 
 	//reserved for serialization
 	CONDITIONATTR_END = 254,
@@ -180,6 +183,8 @@ class ConditionRegeneration final : public ConditionGeneric
 		ConditionRegeneration(ConditionId_t id, ConditionType_t type, int32_t ticks, bool buff = false, uint32_t subId = 0, bool aggressive = false):
 			ConditionGeneric(id, type, ticks, buff, subId, aggressive) {}
 
+		bool startCondition(Creature* creature) override;
+
 		void addCondition(Creature* creature, const Condition* condition) override;
 		bool executeCondition(Creature* creature, int32_t interval) override;
 
@@ -202,6 +207,60 @@ class ConditionRegeneration final : public ConditionGeneric
 		uint32_t manaTicks = 1000;
 		uint32_t healthGain = 0;
 		uint32_t manaGain = 0;
+};
+
+class ConditionStaminaRegen final : public ConditionGeneric
+{
+	public:
+		ConditionStaminaRegen(ConditionId_t id, ConditionType_t type, int32_t ticks, bool buff = false, uint32_t subId = 0, bool aggressive = false):
+			ConditionGeneric(id, type, ticks, buff, subId, aggressive) {}
+
+		void addCondition(Creature* creature, const Condition* condition) override;
+		bool executeCondition(Creature* creature, int32_t interval) override;
+
+		bool setParam(ConditionParam_t param, int32_t value) override;
+		int32_t getParam(ConditionParam_t param) override;
+
+		ConditionStaminaRegen* clone() const override {
+			return new ConditionStaminaRegen(*this);
+		}
+
+		//serialization
+		void serialize(PropWriteStream& propWriteStream) override;
+ 		bool unserializeProp(ConditionAttr_t attr, PropStream& propStream) override;
+
+	private:
+		uint32_t internalStaminaTicks = 0;
+
+		uint32_t staminaTicks = 5000;
+		uint32_t staminaGain = 1;
+};
+
+class ConditionHungry final : public ConditionGeneric
+{
+	public:
+		ConditionHungry(ConditionId_t id, ConditionType_t type, int32_t ticks, bool buff = false, uint32_t subId = 0, bool aggressive = false):
+			ConditionGeneric(id, type, ticks, buff, subId, aggressive) {}
+
+		void addCondition(Creature* creature, const Condition* condition) override;
+		bool executeCondition(Creature* creature, int32_t interval) override;
+
+		bool setParam(ConditionParam_t param, int32_t value) override;
+		int32_t getParam(ConditionParam_t param) override;
+
+		bool isStarving();
+		ConditionHungry* clone() const override {
+			return new ConditionHungry(*this);
+		}
+
+		//serialization
+		void serialize(PropWriteStream& propWriteStream) override;
+ 		bool unserializeProp(ConditionAttr_t attr, PropStream& propStream) override;
+
+	private:
+		uint32_t internalHungryTicks = 0;
+		uint32_t hungryTicks = 20000;
+		uint32_t hungryTotalTicks = 0;
 };
 
 class ConditionSoul final : public ConditionGeneric

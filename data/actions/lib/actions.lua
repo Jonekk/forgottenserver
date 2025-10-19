@@ -269,6 +269,21 @@ function onUseCrowbar(player, item, fromPosition, target, toPosition, isHotkey)
 	return destroyItem(player, target, toPosition)
 end
 
+function onUseDestroy(player, item, fromPosition, target, toPosition, isHotkey)
+	local tile = Tile(toPosition)
+	local tileItems = tile:getItems()
+	for i = 1, tile:getItemCount() do
+		local tileItem = tileItems[i]
+		if tileItem and tileItem:isCreationItem() then
+			toPosition:sendMagicEffect(CONST_ME_POFF)
+			local damage = gaussianRandom20p(item:getAttack() * 10)
+			tileItem:damageItem(damage)
+			return true
+		end
+	end
+	return false
+end
+
 function onUseKitchenKnife(player, item, fromPosition, target, toPosition, isHotkey)
 	if not table.contains({2566, 10511, 10515}, item.itemid) then
 		return false

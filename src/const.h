@@ -342,6 +342,8 @@ enum Icons_t {
 	ICON_REDSWORDS = 1 << 13,
 	ICON_PIGEON = 1 << 14,
 	ICON_BLEEDING = 1 << 15,
+	ICON_HUNGRY = 1 << 16,
+	ICON_STARVING = 1 << 17,
 };
 
 enum WeaponType_t : uint8_t {
@@ -489,6 +491,17 @@ enum item_t : uint16_t {
 	ITEM_AMULETOFLOSS = 2173,
 
 	ITEM_DOCUMENT_RO = 1968, //read-only
+
+	ITEM_SMALL_STONE = 1294,
+	ITEM_WOODEN_STICK = 26384,
+	ITEM_PIECE_OF_WOOD = 26388,
+	ITEM_STONE_AXE = 26390,
+	ITEM_STONE_PICK = 26389,
+	ITEM_TIN_ORE = 26391,
+	ITEM_PILE_OF_SALT = 26392,
+	ITEM_COAL = 26393,
+	ITEM_COPPER_ORE = 26394,
+	ITEM_IRON_ORE = 26395,
 };
 
 enum PlayerFlags : uint64_t {

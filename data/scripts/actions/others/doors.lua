@@ -88,7 +88,7 @@ function door.onUse(player, item, fromPosition, target, toPosition, isHotkey)
 		if not table.contains(openDoors, target.itemid) and not table.contains(closedDoors, target.itemid) and not table.contains(lockedDoors, target.itemid) then
 			return false
 		end
-		if item.actionid ~= target.actionid then
+		if item.actionid ~= target.actionid and item:getUniqueId() ~= target:getUniqueId() then
 			player:sendTextMessage(MESSAGE_STATUS_SMALL, "The key does not match.")
 			return true
 		end

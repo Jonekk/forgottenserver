@@ -7,6 +7,8 @@
 
 #include "game.h"
 
+#include "timer.h"
+
 #include "iomarket.h"
 
 #include "configmanager.h"
@@ -19,6 +21,7 @@
 #include "scheduler.h"
 #include "databasetasks.h"
 #include "script.h"
+#include "randomitemspawner.hpp"
 #include <fstream>
 #include <fmt/color.h>
 #if __has_include("gitmetadata.h")
@@ -35,6 +38,7 @@ Monsters g_monsters;
 Vocations g_vocations;
 extern Scripts* g_scripts;
 RSA g_RSA;
+RandomItemSpawner g_randomItemSpawner;
 
 std::mutex g_loaderLock;
 std::condition_variable g_loaderSignal;
@@ -130,6 +134,8 @@ void printServerVersion()
 
 void mainLoader(int, char*[], ServiceManager* services)
 {
+	Timer timer;
+
 	//dispatcher thread
 	g_game.setGameState(GAME_STATE_STARTUP);
 
@@ -275,8 +281,17 @@ void mainLoader(int, char*[], ServiceManager* services)
 		return;
 	}
 
+	std::cout << ">> Loading creation items";
+	timer.start();
+	int loaded_items = g_game.loadCreationItems();
+	std::cout << fmt::format("(count: {}) - [{}ms]", loaded_items, timer.stop()) << std::endl;
+
+	std::cout << ">> Loading random spawner config" << std::endl;
+	g_randomItemSpawner.loadFromXml("data/world/randomspawns.xml");
+
 	std::cout << ">> Initializing gamestate" << std::endl;
 	g_game.setGameState(GAME_STATE_INIT);
+
 
 	// Game client protocols
 	services->add<ProtocolGame>(static_cast<uint16_t>(g_config.getNumber(ConfigManager::GAME_PORT)));

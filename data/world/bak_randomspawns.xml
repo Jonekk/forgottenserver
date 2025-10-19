@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<randomspawns checkIntervalMs="10000" actionIdTag="65000">
+  <area id="herb_forest"
+        x="1032" y="983" z="7"
+        radius="7"
+        spawnChancePerCheck="0.30"
+        maxActive="5"
+        attemptsPerCheck="3">
+    <allowedTiles>
+      <!-- ground item server IDs; put the exact ground tiles you accept (e.g., grass IDs) -->
+      <tile id="4526"/>
+      <tile id="4527"/>
+      <tile id="4528"/>
+    </allowedTiles>
+    <items>
+      <item id="3725" weight="70"/>   <!-- mushroom -->
+      <item id="5091" weight="20"/>
+      <item id="3031" weight="10"/>   <!-- gold coin -->
+    </items>
+  </area>
+
+  <area id="camp_supplies"
+        x="32500" y="32250" z="6"
+        radius="10"
+        spawnChancePerCheck="0.10"
+        maxActive="8"
+        attemptsPerCheck="2">
+    <!-- if <allowedTiles> omitted or empty, any non-blocking ground is allowed -->
+    <items>
+      <item id="268"  weight="50"/>   <!-- torch -->
+      <item id="2050" weight="50"/>   <!-- rope -->
+    </items>
+  </area>
+</randomspawns>

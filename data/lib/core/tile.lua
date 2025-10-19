@@ -53,3 +53,24 @@ function Tile.isWalkable(self)
 	end
 	return true
 end
+
+local itemsAllowedToConstructOn = {6216, 6217, 6218, 6219}
+function Tile.isConstructable(self)
+	local ground = self:getGround()
+	if not ground or ground:hasProperty(CONST_PROP_BLOCKSOLID) or ground:hasProperty(CONST_PROP_HASHEIGHT) then
+		return false
+	end
+
+	local items = self:getItems()
+	for i = 1, self:getItemCount() do
+		local item = items[i]
+		local itemType = item:getType()
+		if itemType:getType() == ITEM_TYPE_MAGICFIELD or itemType:isMovable() or item:hasProperty(CONST_PROP_BLOCKSOLID) or item:hasProperty(CONST_PROP_HASHEIGHT) then
+			return false
+		end
+		if itemType:getTileOrder() == 0 and not table.contains(itemsAllowedToConstructOn, item:getId()) then
+			return false
+		end
+	end
+	return true
+end

@@ -630,18 +630,18 @@ class Item : virtual public Thing
 			getAttributes()->setCustomAttribute(key, value);
 		}
 
-		const ItemAttributes::CustomAttribute* getCustomAttribute(int64_t key) {
+		const ItemAttributes::CustomAttribute* getCustomAttribute(int64_t key) const {
 			if (!attributes) {
 				return nullptr;
 			}
-			return getAttributes()->getCustomAttribute(key);
+			return const_cast<Item*>(this)->getAttributes()->getCustomAttribute(key);
 		}
 
-		const ItemAttributes::CustomAttribute* getCustomAttribute(const std::string& key) {
+		const ItemAttributes::CustomAttribute* getCustomAttribute(const std::string& key) const {
 			if (!attributes) {
 				return nullptr;
 			}
-			return getAttributes()->getCustomAttribute(key);
+			return const_cast<Item*>(this)->getAttributes()->getCustomAttribute(key);
 		}
 
 		bool removeCustomAttribute(int64_t key) {
@@ -1035,6 +1035,20 @@ class Item : virtual public Thing
 			return !parent || parent->isRemoved();
 		}
 
+		void setCreationId(uint32_t creationId);
+		uint32_t getCreationId() const;
+		bool isCreationItem() const;
+		void setCreationBuilder(uint32_t builderGuid);
+		uint32_t getCreationBuilder() const;
+
+		void moveCreationDataFrom(Item *item);
+
+		void damageItem(int32_t damage);
+
+		void onDecay();
+
+		void setWeight(int64_t value);
+
 	protected:
 		Cylinder* parent = nullptr;
 
@@ -1050,6 +1064,10 @@ class Item : virtual public Thing
 		uint8_t count = 1; // number of stacked items
 
 		bool loadedFromMap = false;
+
+		// Creation data
+		uint32_t creationId = 0;
+		uint32_t creationBuilder = 0;
 
 		//Don't add variables here, use the ItemAttribute class.
 };

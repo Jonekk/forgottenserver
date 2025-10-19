@@ -485,7 +485,6 @@ void ProtocolGame::parsePacket(NetworkMessage& msg)
 			return;
 		}
 	}
-
 	switch (recvbyte) {
 		case 0x14: g_dispatcher.addTask(createTask(std::bind(&ProtocolGame::logout, getThis(), true, false))); break;
 		case 0x1D: addGameTask(&Game::playerReceivePingBack, player->getID()); break;
@@ -580,6 +579,37 @@ void ProtocolGame::parsePacket(NetworkMessage& msg)
 	}
 }
 
+template<typename T, typename... Ts>
+bool isOneOf(T value, Ts... candidates) {
+    return ((value == candidates) || ...);
+}
+
+static bool isTraceItem(const Item *item)
+{
+	return isOneOf(item->getID(), 26417, 26418, 26419, 26420);
+}
+
+static bool isTraceItemForPlayer(const Player *player, const Item *item)
+{
+	const ItemAttributes::CustomAttribute* attr = item->getCustomAttribute("player");
+	if (attr) {
+		uint32_t playerGuid = boost::get<int64_t>(attr->value);
+		if (player->getGUID() == playerGuid) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void ProtocolGame::filterAndAddItem(NetworkMessage& msg, const Item* item)
+{
+	if (isTraceItem(item)) {
+		msg.addItem(item, !isTraceItemForPlayer(player, item));
+	} else {
+		msg.addItem(item);
+	}
+}
+
 void ProtocolGame::GetTileDescription(const Tile* tile, NetworkMessage& msg)
 {
 	msg.add<uint16_t>(0x00); //environmental effects
@@ -596,7 +626,7 @@ void ProtocolGame::GetTileDescription(const Tile* tile, NetworkMessage& msg)
 	const TileItemVector* items = tile->getItemList();
 	if (items) {
 		for (auto it = items->getBeginTopItem(), end = items->getEndTopItem(); it != end; ++it) {
-			msg.addItem(*it);
+			filterAndAddItem(msg, *it);
 
 			if (++count == 10) {
 				break;
@@ -621,7 +651,7 @@ void ProtocolGame::GetTileDescription(const Tile* tile, NetworkMessage& msg)
 
 	if (items && count < 10) {
 		for (auto it = items->getBeginDownItem(), end = items->getEndDownItem(); it != end; ++it) {
-			msg.addItem(*it);
+			filterAndAddItem(msg, *it);
 
 			if (++count == 10) {
 				return;
@@ -1522,11 +1552,11 @@ void ProtocolGame::sendChannelMessage(const std::string& author, const std::stri
 	writeToOutputBuffer(msg);
 }
 
-void ProtocolGame::sendIcons(uint16_t icons)
+void ProtocolGame::sendIcons(uint32_t icons)
 {
 	NetworkMessage msg;
 	msg.addByte(0xA2);
-	msg.add<uint16_t>(icons);
+	msg.add<uint32_t>(icons);
 	writeToOutputBuffer(msg);
 }
 
@@ -2392,7 +2422,7 @@ void ProtocolGame::sendUpdateTileItem(const Position& pos, uint32_t stackpos, co
 	msg.addByte(0x6B);
 	msg.addPosition(pos);
 	msg.addByte(stackpos);
-	msg.addItem(item);
+	filterAndAddItem(msg, item);
 	writeToOutputBuffer(msg);
 }
 
@@ -3045,6 +3075,8 @@ void ProtocolGame::AddPlayerStats(NetworkMessage& msg)
 
 	msg.add<uint16_t>(0); // xp boost time (seconds)
 	msg.addByte(0); // enables exp boost in the store
+	msg.add<uint16_t>(std::min<int32_t>(player->getStamina(), std::numeric_limits<uint16_t>::max()));
+	msg.add<uint16_t>(std::min<int32_t>(player->getMaxStamina(), std::numeric_limits<uint16_t>::max()));
 }
 
 void ProtocolGame::AddPlayerSkills(NetworkMessage& msg)

@@ -89,7 +89,20 @@ class Vocation
 		std::string name = "none";
 		std::string description;
 
-		double skillMultipliers[SKILL_LAST + 1] = {1.5, 2.0, 2.0, 2.0, 2.0, 1.5, 1.1};
+		double skillMultipliers[SKILL_LAST + 1] = {
+			1.35, // SKILL_FIST
+			1.35, // SKILL_CLUB
+			1.35, // SKILL_SWORD
+			1.35, // SKILL_AXE
+			1.35, // SKILL_DISTANCE
+			1.35, // SKILL_SHIELD
+			1.35, // SKILL_FISHING
+			1.35, // SKILL_CRAFTING
+			1.35, // SKILL_COOKING
+			1.35, // SKILL_MINING
+			1.35, // SKILL_FARMING
+			1.35, // SKILL_HUNTING
+		};
 		float manaMultiplier = 4.0f;
 
 		uint32_t gainHealthTicks = 6;

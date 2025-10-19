@@ -34,6 +34,7 @@
 	</voices>
 	<loot>
 		<item name="meat" countmax="2" chance="70000" />
+		<item name="toolbox" id="8823" countmax="1" chance="100000" />
 		<item name="wolf paw" chance="1000" />
 	</loot>
 </monster>

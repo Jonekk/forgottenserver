@@ -4,10 +4,12 @@ local invalidIds = {
 
 function onSay(player, words, param)
 	if not player:getGroup():getAccess() then
+		player:sendCancelMessage("no access.")
 		return true
 	end
 
 	if player:getAccountType() < ACCOUNT_TYPE_GOD then
+		player:sendCancelMessage("Not god.")
 		return false
 	end
 

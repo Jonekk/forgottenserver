@@ -631,6 +631,7 @@ ShootTypeNames shootTypeNames = {
 
 CombatTypeNames combatTypeNames = {
 	{COMBAT_PHYSICALDAMAGE, 	"physical"},
+	{COMBAT_PHYSICALDAMAGE_NO_BLOOD, 		"physical"},
 	{COMBAT_ENERGYDAMAGE, 		"energy"},
 	{COMBAT_EARTHDAMAGE, 		"earth"},
 	{COMBAT_FIREDAMAGE, 		"fire"},
@@ -790,6 +791,21 @@ std::string getSkillName(uint8_t skillid)
 		case SKILL_FISHING:
 			return "fishing";
 
+		case SKILL_CRAFTING:
+			return "crafting";
+
+		case SKILL_COOKING:
+			return "cooking";
+
+		case SKILL_MINING:
+			return "mining";
+
+		case SKILL_FARMING:
+			return "farming";
+
+		case SKILL_HUNTING:
+			return "hunting";
+
 		case SKILL_MAGLEVEL:
 			return "magic level";
 
@@ -905,6 +921,8 @@ size_t combatTypeToIndex(CombatType_t combatType)
 			return 10;
 		case COMBAT_DEATHDAMAGE:
 			return 11;
+		case COMBAT_PHYSICALDAMAGE_NO_BLOOD:
+			return 12;
 		default:
 			return 0;
 	}

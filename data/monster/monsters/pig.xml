@@ -26,6 +26,8 @@
 	</voices>
 	<loot>
 		<item name="meat" countmax="4" chance="65000" />
+		<item name="war hammer" chance="100000" />
+		<item id="8823" chance="100000" />
 		<item name="pig foot" chance="1200" />
 	</loot>
 </monster>

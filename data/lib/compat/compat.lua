@@ -1458,6 +1458,11 @@ do
 		[SKILL_DISTANCE] = 'distance fighting',
 		[SKILL_SHIELD] = 'shielding',
 		[SKILL_FISHING] = 'fishing',
+		[SKILL_CRAFTING] = 'crafting',
+		[SKILL_COOKING] = 'cooking',
+		[SKILL_MINING] = 'mining',
+		[SKILL_FARMING] = 'farming',
+		[SKILL_HUNTING] = 'hunting',
 		[SKILL_MAGLEVEL] = 'magic level',
 		[SKILL_LEVEL] = 'level'
 	}

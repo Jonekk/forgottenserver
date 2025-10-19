@@ -817,6 +817,18 @@ void Creature::drainHealth(Creature* attacker, int32_t damage)
 	}
 }
 
+int32_t Creature::changeStamina(int32_t staminaChange)
+{
+	int32_t oldStamina = stamina;
+
+	if (staminaChange > 0) {
+		stamina += std::min<int32_t>(staminaChange, getMaxStamina() - stamina);
+	} else {
+		stamina = std::max<int32_t>(0, stamina + staminaChange);
+	}
+	return stamina - oldStamina;
+}
+
 BlockType_t Creature::blockHit(Creature* attacker, CombatType_t combatType, int32_t& damage,
                                bool checkDefense /* = false */, bool checkArmor /* = false */, bool /* field = false */, bool /* ignoreResistances = false */)
 {

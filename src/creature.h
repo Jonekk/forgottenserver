@@ -215,6 +215,13 @@ class Creature : virtual public Thing
 			return healthMax;
 		}
 
+		int32_t getStamina() const {
+			return stamina;
+		}
+		virtual int32_t getMaxStamina() const {
+			return staminaMax;
+		}
+
 		void setDrunkenness(uint8_t newDrunkenness) {
 			drunkenness = newDrunkenness;
 		}
@@ -334,6 +341,8 @@ class Creature : virtual public Thing
 
 		void gainHealth(Creature* healer, int32_t healthGain);
 		virtual void drainHealth(Creature* attacker, int32_t damage);
+
+		virtual int32_t changeStamina(int32_t staminaChange);
 
 		virtual bool challengeCreature(Creature*, bool) {
 			return false;
@@ -507,6 +516,8 @@ class Creature : virtual public Thing
 		int32_t varSpeed = 0;
 		int32_t health = 1000;
 		int32_t healthMax = 1000;
+		int32_t stamina = 100;
+		int32_t staminaMax = 100;
 		uint8_t drunkenness = 0;
 
 		Outfit_t currentOutfit;

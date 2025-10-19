@@ -556,6 +556,7 @@
 			<attribute key="count" value="2" />
 			<attribute key="damage" value="10" />
 		</attribute>
+		<attribute key="showduration" value="1" />
 	</item>
 	<item fromid="1426" toid="1427" article="an" name="unlit campfire" />
 	<item id="1428" article="a" name="campfire" />
@@ -1332,7 +1333,9 @@
 	<item fromid="1778" toid="1785" article="a" name="big wine cask">
 		<attribute key="fluidSource" value="wine" />
 	</item>
-	<item fromid="1786" toid="1793" article="an" name="oven" />
+	<item fromid="1786" toid="1793" article="an" name="oven">
+		<attribute key="showduration" value="1" />
+	</item>
 	<item fromid="1794" toid="1802" article="a" name="red carpet" />
 	<item fromid="1803" toid="1808" article="an" name="oriental carpet" />
 	<item id="1809" article="a" name="painting" />
@@ -4712,7 +4715,10 @@
 	<item id="2700" article="a" name="fir tree" />
 	<item id="2701" article="a" name="sycamore" />
 	<item id="2702" article="a" name="willow" />
-	<item id="2703" article="a" name="plum tree" />
+	<item id="2703" article="a" name="plum tree">
+		<attribute key="decayTo" value="2703"/> 
+		<attribute key="duration" value="60"/> 
+	</item>
 	<item id="2704" article="a" name="red maple" />
 	<item id="2705" article="a" name="pear tree" />
 	<item id="2706" article="a" name="yellow maple" />
@@ -4795,7 +4801,7 @@
 	<item id="2782" name="jungle grass" />
 	<item id="2783" article="an" name="agave" />
 	<item id="2784" article="a" name="dry bush" />
-	<item id="2785" article="a" name="blueberry bush" />
+	<item id="2785" article="a" name="blueberry bush"/>
 	<item id="2786" article="a" name="blueberry bush">
 		<attribute key="decayTo" value="2785" />
 		<attribute key="duration" value="300" />
@@ -37367,4 +37373,115 @@
 	<item id="26379" article="a" name="golden dragon tapestry" />
 	<item id="26380" article="a" name="sword tapestry" />
 	<item id="26381" article="a" name="brocade tapestry" />
+
+	<!-- custom items-->
+	<item id="26382" article="a" name="apple tree"/>
+	<item id="26383" article="a" name="pear tree"/>
+
+	<item id="26384" key="article" value="a" name="wooden stick">
+		<attribute key="weight" value="200"/>
+	</item>
+	<!-- 26386 empty branch - not needed anymore -->
+	<item id="26387" article="a" name="blueprint" />
+
+	<item id="26388" article="a" name="piece of wood" plural="pieces of wood">
+		<attribute key="weight" value="500"/>
+	</item>
+
+	<item id="26389" article="a" name="stone pick">
+		<attribute key="weight" value="6000" />
+	</item>
+	<item id="26390" article="a" name="stone axe">
+		<attribute key="weight" value="5000" />
+	</item>
+	<item id="26391" article="a" name="tin ore">
+		<attribute key="weight" value="100" />
+	</item>
+	<item id="26392" article="a" name="pile of salt" plural="piles of salt">
+		<attribute key="weight" value="50" />
+	</item>
+	<item id="26393" article="a" name="coal">
+		<attribute key="weight" value="200" />
+	</item>
+	<item id="26394" article="a" name="copper ore">
+		<attribute key="weight" value="200" />
+	</item>
+	<item id="26395" article="a" name="iron ore">
+		<attribute key="weight" value="200" />
+	</item>
+	<!-- ore veins -->
+	<item id="26396" article="a" name="saltstone" />
+	<item id="26397" article="a" name="blackrock" />
+	<item id="26398" article="a" name="firevein" />
+	<item id="26399" article="a" name="bogvein" />
+	<item id="26400" article="a" name="bloodrock" />
+	<item id="26401" article="a" name="palevein" />
+
+	<item id="26402" article="a" name="construction blueprint" />
+	<item id="26403" article="a" name="finished construction blueprint">
+		<attribute key="weight" value="2000" />
+	</item>
+	<item id="26404" name="raw meat">
+		<attribute key="weight" value="1300" />
+	</item>
+	<item id="26405" article="a" name="cooking recipe" />
+	<item id="26406" article="a" name="finished cooking recipe" />
+
+	<item id="26407" article="a" name="sapling" >
+		<attribute key="weight" value="2000" />
+	</item>
+	<item id="26408" article="a" name="strawberry bush">
+		<attribute key="decayTo" value="26409" />
+		<attribute key="duration" value="10" />
+	</item>
+	<item id="26409" article="a" name="strawberry bush" />
+	<item id="26410" article="a" name="finished sapling" >
+		<attribute key="weight" value="2000" />
+	</item>
+	<item id="26411" article="a" name="fertilizer" plural="fertilizers" >
+		<attribute key="weight" value="200" />
+	</item>
+	<item id="26412" article="a" name="grass fiber" plural="grass fibers" >
+		<attribute key="weight" value="200" />
+	</item>
+	<item id="26413" article="a" name="string" plural="strings" >
+		<attribute key="weight" value="400" />
+	</item>
+	<item id="26414" article="a" name="withered blueberry bush"/>
+	<item id="26415" article="a" name="withered strawberry bush"/>
+
+	<item id="26416" article="a" name="stone hunting knife">
+		<attribute key="weight" value="1200" />
+	</item>
+
+	<item id="26417" article="a" name="trace of a wolf">
+		<attribute key="decayTo" value="0" />
+		<attribute key="duration" value="30" />
+	</item>
+	<item id="26418" article="a" name="trace of a rabbit">
+		<attribute key="decayTo" value="0" />
+		<attribute key="duration" value="30" />
+	</item>
+	<item id="26419" article="a" name="trace of a deer">
+		<attribute key="decayTo" value="0" />
+		<attribute key="duration" value="30" />
+	</item>
+	<item id="26420" article="a" name="trace of a bear">
+		<attribute key="decayTo" value="0" />
+		<attribute key="duration" value="30" />
+	</item>
+
+	<item id="26421" article="a" name="closed small trap">
+		<attribute key="weight" value="2100" />
+	</item>
+	<item id="26422" article="a" name="open small trap" />
+	<item id="26423" article="a" name="closed medium trap">
+		<attribute key="weight" value="2100" />
+	</item>
+	<item id="26424" article="a" name="open medium trap" />
+	<item id="26425" article="a" name="closed big trap">
+		<attribute key="weight" value="2100" />
+	</item>
+	<item id="26426" article="a" name="open big trap" />
+	<!-- <item id="26394" article="a" name="shardvein" /> -->
 </items>

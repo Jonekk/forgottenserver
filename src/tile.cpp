@@ -302,6 +302,19 @@ Item* Tile::getTopTopItem() const
 	return nullptr;
 }
 
+Item* Tile::getItemById(uint16_t id) const
+{
+	if (auto items = getItemList()) {
+		for (Item* item : *items) {
+			if (item->getID() == id) {
+				return item;
+			}
+		}
+	}
+	return nullptr;
+}
+
+
 Item* Tile::getItemByTopOrder(int32_t topOrder)
 {
 	//topOrder:
@@ -1321,6 +1334,22 @@ Thing* Tile::getThing(size_t index) const
 		return items->at(index);
 	}
 	return nullptr;
+}
+
+bool Tile::isConstructionAllowed()
+{
+	if (ground && ground->hasProperty(CONST_PROP_BLOCKSOLID)) return false;
+	for (int i = 1; i < getItemCount(); i++) {
+		Thing *t = getThing(i);
+		if (t->getCreature()) return false;
+		Item *item = t->getItem();
+		if (item) {
+			if (item->isMoveable()) return false;
+			if (item->hasProperty(CONST_PROP_HASHEIGHT)) return false;
+			if (item->hasProperty(CONST_PROP_BLOCKPATH)) return false;
+		}
+	}
+	return true;
 }
 
 void Tile::postAddNotification(Thing* thing, const Cylinder* oldParent, int32_t index, cylinderlink_t link /*= LINK_OWNER*/)

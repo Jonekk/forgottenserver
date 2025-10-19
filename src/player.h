@@ -83,7 +83,7 @@ struct OutfitEntry {
 	uint8_t addons;
 };
 
-static constexpr int16_t MINIMUM_SKILL_LEVEL = 10;
+static constexpr int16_t MINIMUM_SKILL_LEVEL = 1;
 
 struct Skill {
 	uint64_t tries = 0;
@@ -240,7 +240,7 @@ class Player final : public Creature, public Cylinder
 			return storeInbox;
 		}
 
-		uint16_t getClientIcons() const;
+		uint32_t getClientIcons() const;
 
 		const GuildWarVector& getGuildWarVector() const {
 			return guildWarVector;
@@ -443,6 +443,7 @@ class Player final : public Creature, public Cylinder
 		void removeMessageBuffer();
 
 		bool removeItemOfType(uint16_t itemId, uint32_t amount, int32_t subType, bool ignoreEquipped = false) const;
+		bool hasItemOfType(uint16_t itemId, uint32_t amount, int32_t subType, bool ignoreEquipped/* = false*/) const;
 
 		uint32_t getCapacity() const {
 			if (hasFlag(PlayerFlag_CannotPickupItem)) {
@@ -587,6 +588,8 @@ class Player final : public Creature, public Cylinder
 		void changeHealth(int32_t healthChange, bool sendHealthChange = true) override;
 		void changeMana(int32_t manaChange);
 		void changeSoul(int32_t soulChange);
+		int32_t changeStamina(int32_t staminaChange);
+		bool useStamina(int staminaRequired);
 
 		bool isPzLocked() const {
 			return pzLocked;

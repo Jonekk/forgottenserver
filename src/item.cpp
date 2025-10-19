@@ -1463,6 +1463,51 @@ std::string Item::getDescription(const ItemType& it, int32_t lookDistance,
 		}
 	}
 
+	if (item) {
+		const ItemAttributes::CustomAttribute* qualityAttr = item->getCustomAttribute("quality");
+		if (qualityAttr) {
+			s << "\nQuality: " << qualityAttr->value << ".";
+		}
+
+		const ItemAttributes::CustomAttribute* durabilityAttr = item->getCustomAttribute("durability");
+		if (durabilityAttr) {
+			const ItemAttributes::CustomAttribute* maxDurabilityAttr = item->getCustomAttribute("durability_max");
+			if (maxDurabilityAttr) {
+				s << "\nDurability " << durabilityAttr->value << "/" << maxDurabilityAttr->value << ".";
+			} else {
+				s << "\nDurability " << durabilityAttr->value << ".";
+			}
+		}
+
+		const ItemAttributes::CustomAttribute* workAttr = item->getCustomAttribute("work");
+		if (workAttr) {
+			const ItemAttributes::CustomAttribute* maxWorkAttr = item->getCustomAttribute("work_max");
+			if (maxWorkAttr) {
+				s << "\nWork progress: " << workAttr->value << "/" << maxWorkAttr->value << ".";
+			} else {
+				s << "\nWork progress: " << workAttr->value << ".";
+			}
+		}
+		const ItemAttributes::CustomAttribute* wateringAttr = item->getCustomAttribute("watering");
+		if (wateringAttr) {
+			const ItemAttributes::CustomAttribute* maxWateringAttr = item->getCustomAttribute("watering_max");
+			if (maxWateringAttr) {
+				s << "\nWater: " << wateringAttr->value << "/" << maxWateringAttr->value << ".";
+			} else {
+				s << "\nWater: " << wateringAttr->value << ".";
+			}
+		}
+		const ItemAttributes::CustomAttribute* fertilityAttr = item->getCustomAttribute("fertility");
+		if (fertilityAttr) {
+			const ItemAttributes::CustomAttribute* maxFertilityAttr = item->getCustomAttribute("fertility_max");
+			if (maxFertilityAttr) {
+				s << "\nFertility: " << fertilityAttr->value << "/" << maxFertilityAttr->value << ".";
+			} else {
+				s << "\nFertility: " << fertilityAttr->value << ".";
+			}
+		}
+	}
+
 	if (it.wieldInfo != 0) {
 		s << "\nIt can only be wielded properly by ";
 
@@ -1558,6 +1603,10 @@ std::string Item::getNameDescription(const ItemType& it, const Item* item /*= nu
 			}
 
 			s << name;
+		}
+		const ItemAttributes::CustomAttribute* bpAttr = item->getCustomAttribute("bp");
+		if (bpAttr) {
+			s << " of " << Item::items.getItemType(boost::get<int64_t>(bpAttr->value)).name;
 		}
 	} else {
 		if (addArticle) {
@@ -1662,6 +1711,83 @@ LightInfo Item::getLightInfo() const
 {
 	const ItemType& it = items[id];
 	return {it.lightLevel, it.lightColor};
+}
+
+void Item::setCreationId(uint32_t creationId) {
+	this->creationId = creationId;
+}
+
+uint32_t Item::getCreationId() const {
+	return this->creationId;
+}
+
+bool Item::isCreationItem() const {
+	return this->creationId > 0;
+}
+
+void Item::setCreationBuilder(uint32_t builderGuid)
+{
+	creationBuilder = builderGuid;
+}
+
+uint32_t Item::getCreationBuilder() const
+{
+	return creationBuilder;
+}
+
+void Item::moveCreationDataFrom(Item *item)
+{
+	creationId = item->creationId;
+	creationBuilder = item->creationBuilder;
+}
+
+void Item::damageItem(int32_t damage) {
+	if (!isCreationItem()) return;
+	const ItemAttributes::CustomAttribute* durabilityAttr = getCustomAttribute("durability");
+	if (!durabilityAttr) return;
+
+	int64_t durability = boost::get<int64_t>(durabilityAttr->value);
+	if (durability < 0) return;
+
+	if (damage < durability) {
+		std::string key = "durability";
+		setCustomAttribute<int64_t>(key, durability - damage);
+	} else {
+		g_game.internalRemoveItem(this, 1);
+	}
+}
+
+void Item::onDecay()
+{
+	uint16_t productId = 0;
+	switch (id) {
+		case 2703: productId = 8839; break;
+		case 26382: productId = 2674; break;
+		case 26383: productId = 2673; break;
+	}
+	if (productId > 0) {
+		Tile *tile = getTile();
+		Item *product_item = tile->getItemById(productId);
+		if (product_item) {
+			if (product_item->getItemCount() < 5) {
+				tile->updateThing(product_item, product_item->getID(), product_item->getItemCount() + 1);
+			}
+		} else {
+			Item* item = Item::CreateItem(productId, 0);
+			tile->addThing(item);			
+		}
+	}
+}
+
+void Item::setWeight(int64_t value)
+{
+	int64_t weightDiff = value - getAttributes()->getIntAttr(ITEM_ATTRIBUTE_WEIGHT);
+	getAttributes()->setIntAttr(ITEM_ATTRIBUTE_WEIGHT, value);
+	Container* parentContainer = getParent()->getContainer();
+	if (parentContainer) { 
+		parentContainer->updateItemWeight(weightDiff);
+		parentContainer->postAddNotification(this, parentContainer, parentContainer->getThingIndex(this));
+	}
 }
 
 std::string ItemAttributes::emptyString;

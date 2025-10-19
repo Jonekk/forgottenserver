@@ -378,9 +378,9 @@ float Player::getDefenseFactor() const
 	}
 }
 
-uint16_t Player::getClientIcons() const
+uint32_t Player::getClientIcons() const
 {
-	uint16_t icons = 0;
+	uint32_t icons = 0;
 	for (Condition* condition : conditions) {
 		if (!isSuppress(condition->getType())) {
 			icons |= condition->getIcons();
@@ -398,6 +398,13 @@ uint16_t Player::getClientIcons() const
 		icons &= ~ICON_SWORDS;
 	}
 
+	if (Condition *hungryCondition = getCondition(CONDITION_HUNGRY)) {
+		if (static_cast<ConditionHungry*>(hungryCondition)->isStarving()) {
+			icons |= ICON_STARVING;
+		} else {
+			icons |= ICON_HUNGRY;
+		}
+	}
 	// Game client debugs with 10 or more icons
 	// so let's prevent that from happening.
 	std::bitset<20> icon_bitset(static_cast<uint64_t>(icons));
@@ -991,7 +998,6 @@ void Player::sendUpdateContainerItem(const Container* container, uint16_t slot, 
 		if (slot >= pageEnd) {
 			continue;
 		}
-
 		client->sendUpdateContainerItem(it.first, slot, newItem);
 	}
 }
@@ -1070,6 +1076,10 @@ void Player::onCreatureAppear(Creature* creature, bool isLogin)
 			addCondition(condition);
 		}
 		storedConditionList.clear();
+		if (!hasCondition(CONDITION_STAMINA_REGEN)) {
+			Condition* condition = Condition::createCondition(CONDITIONID_DEFAULT, CONDITION_STAMINA_REGEN, 5000, 0);
+			addCondition(condition);
+		}
 
 		updateRegeneration();
 
@@ -1229,7 +1239,7 @@ void Player::onRemoveCreature(Creature* creature, bool isLogout)
 }
 
 void Player::openShopWindow(Npc* npc, const std::list<ShopInfo>& shop)
-{
+{	
 	shopItemList = shop;
 	sendShop(npc);
 	sendSaleItemList();
@@ -2966,6 +2976,41 @@ bool Player::removeItemOfType(uint16_t itemId, uint32_t amount, int32_t subType,
 	return false;
 }
 
+bool Player::hasItemOfType(uint16_t itemId, uint32_t amount, int32_t subType, bool ignoreEquipped/* = false*/) const
+{
+	if (amount == 0) {
+		return true;
+	}
+
+	uint32_t count = 0;
+	for (int32_t i = CONST_SLOT_FIRST; i <= CONST_SLOT_LAST; i++) {
+		Item* item = inventory[i];
+		if (!item) {
+			continue;
+		}
+
+		if (!ignoreEquipped && item->getID() == itemId) {
+			uint32_t itemCount = Item::countByType(item, subType);
+			count += itemCount;
+			if (count >= amount) {
+				return true;
+			}
+		} else if (Container* container = item->getContainer()) {
+			for (ContainerIterator it = container->iterator(); it.hasNext(); it.advance()) {
+				Item* containerItem = *it;
+				if (containerItem->getID() == itemId) {
+					uint32_t itemCount = Item::countByType(containerItem, subType);
+					count += itemCount;
+					if (count >= amount) {
+						return true;
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+
 std::map<uint32_t, uint32_t>& Player::getAllItemTypeCount(std::map<uint32_t, uint32_t>& countMap) const
 {
 	for (int32_t i = CONST_SLOT_FIRST; i <= CONST_SLOT_LAST; i++) {
@@ -3679,6 +3724,28 @@ void Player::changeMana(int32_t manaChange)
 	}
 
 	sendStats();
+}
+
+int32_t Player::changeStamina(int32_t staminaChange)
+{
+	int32_t staminaBefore = stamina;
+	if (staminaChange > 0) {
+		stamina += std::min<int32_t>(staminaChange, getMaxStamina() - stamina);
+	} else {
+		stamina = std::max<int32_t>(0, stamina + staminaChange);
+	}
+
+	sendStats();
+	return stamina - staminaBefore;
+}
+
+bool Player::useStamina(int staminaRequired)
+{
+	if (stamina >= staminaRequired) {
+		changeStamina(-staminaRequired);
+		return true;
+	}
+	return false;
 }
 
 void Player::changeSoul(int32_t soulChange)

@@ -4,6 +4,7 @@ set(tfs_SRC
 	${CMAKE_CURRENT_LIST_DIR}/ban.cpp
 	${CMAKE_CURRENT_LIST_DIR}/baseevents.cpp
 	${CMAKE_CURRENT_LIST_DIR}/bed.cpp
+	${CMAKE_CURRENT_LIST_DIR}/borders.cpp
 	${CMAKE_CURRENT_LIST_DIR}/chat.cpp
 	${CMAKE_CURRENT_LIST_DIR}/combat.cpp
 	${CMAKE_CURRENT_LIST_DIR}/condition.cpp
@@ -55,6 +56,7 @@ set(tfs_SRC
 	${CMAKE_CURRENT_LIST_DIR}/protocolstatus.cpp
 	${CMAKE_CURRENT_LIST_DIR}/quests.cpp
 	${CMAKE_CURRENT_LIST_DIR}/raids.cpp
+	${CMAKE_CURRENT_LIST_DIR}/randomitemspawner.cpp
 	${CMAKE_CURRENT_LIST_DIR}/rsa.cpp
 	${CMAKE_CURRENT_LIST_DIR}/scheduler.cpp
 	${CMAKE_CURRENT_LIST_DIR}/scriptmanager.cpp
@@ -69,6 +71,7 @@ set(tfs_SRC
 	${CMAKE_CURRENT_LIST_DIR}/teleport.cpp
 	${CMAKE_CURRENT_LIST_DIR}/thing.cpp
 	${CMAKE_CURRENT_LIST_DIR}/tile.cpp
+	${CMAKE_CURRENT_LIST_DIR}/timer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/tools.cpp
 	${CMAKE_CURRENT_LIST_DIR}/trashholder.cpp
 	${CMAKE_CURRENT_LIST_DIR}/vocation.cpp

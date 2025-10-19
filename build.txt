@@ -1,0 +1,1 @@
+ninja -j 21 -C build_debug/
