@@ -4808,12 +4808,15 @@
 	</item>
 	<item id="2787" article="a" name="white mushroom">
 		<attribute key="weight" value="40" />
+		<attribute key="duration" value="2" />
 	</item>
 	<item id="2788" article="a" name="red mushroom">
 		<attribute key="weight" value="50" />
+		<attribute key="duration" value="2" />
 	</item>
 	<item id="2789" article="a" name="brown mushroom">
 		<attribute key="weight" value="20" />
+		<attribute key="duration" value="2" />
 	</item>
 	<item id="2790" article="an" name="orange mushroom">
 		<attribute key="weight" value="30" />
@@ -37484,4 +37487,22 @@
 	</item>
 	<item id="26426" article="a" name="open big trap" />
 	<!-- <item id="26394" article="a" name="shardvein" /> -->
+
+	<item id="26427" article="a" name="starveil" />
+	<item id="26428" article="a" name="starveil leaf" />
+	<item id="26429" article="a" name="unknown herb" />
+	<item id="26430" article="a" name="lifevine" />
+	<item id="26431" article="a" name="lifevine leaf" />
+	<item id="26432" article="a" name="greenlance" />
+	<item id="26433" article="a" name="greenlance leaf" />
+	<item id="26434" article="a" name="duskmoss" />
+	<item id="26435" article="a" name="duskmoss string" />
+	<item id="26436" article="a" name="mirelace" />
+	<item id="26437" article="a" name="mirelace core" />
+	<item id="26438" article="a" name="embderbud" />
+	<item id="26439" article="a" name="emberbud pod" />
+	<item id="26440" article="a" name="heartbloom" />
+	<item id="26441" article="a" name="heartbloom seed" />
+	<item id="26442" article="a" name="swamptorch" />
+	<item id="26443" article="a" name="swamptorch root" />
 </items>

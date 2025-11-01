@@ -1,16 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<randomspawns checkIntervalMs="1000" actionIdTag="65000">
+<randomItemSpawner checkIntervalMs="1000" >
   <area id="test_spawn"
         x="1032" y="983" z="7"
-        radius="6"
+        radius="2"
         spawnChancePerCheck="0.30"
-        maxActive="10"
+        maxActive="0"
         attemptsPerCheck="2">
     <items>
-      <item id="2787" weight="70"/>   <!-- mushroom -->
-      <item id="2788" weight="20"/>
-      <item id="2789" weight="10"/>   <!-- gold coin -->
+      <!--<item id="2787" weight="70"/> -->
+      <!--<item id="2788" weight="20"/> -->
+      <!--<item id="2789" weight="10"/> -->
     </items>
+    <spawns>
+
+      <!-- Example 1: manual decay -->
+      <spawn itemid="2787" count="1..5" chance="0%" timeOfDay="night">
+        <decay time="10s" useNative="false" />
+        <attrs>
+          <attr key="quality" type="number" value="100" />
+        </attrs>
+      </spawn>
+
+      <!-- Example 2: native decay -->
+      <spawn itemid="2788" count="1..5" chance="0%" timeOfDay="sunset">
+        <decay time="10s" useNative="false" />
+        <attrs>
+          <attr key="quality" type="number" value="100" />
+        </attrs>
+      </spawn>
+      <spawn itemid="2790" count="1..5" chance="0%" timeOfDay="day">
+        <decay time="10s" useNative="false" />
+        <attrs>
+          <attr key="quality" type="number" value="100" />
+        </attrs>
+      </spawn>
+      <spawn itemid="2791" count="1..5" chance="0%" timeOfDay="sunrise">
+        <decay time="10s" useNative="false" />
+        <attrs>
+          <attr key="quality" type="number" value="100" />
+        </attrs>
+      </spawn>
+    </spawns>
   </area>
 
-</randomspawns>
+  <area id="test_spawn2"
+        x="1032" y="983" z="7"
+        radius="2"
+        spawnChancePerCheck="0.30"
+        maxActive="3"
+        attemptsPerCheck="1">
+    <spawns>
+      <spawn itemid="26427" count="1" chance="0%">
+        <decay time="30s" useNative="false" />
+        <attrs>
+          <attr key="Q" type="number" value="100" />
+        </attrs>
+      </spawn>
+      <spawn itemid="26429" count="1" chance="90%">
+        <decay time="30s" useNative="false" />
+        <attrs>
+          <attr key="Q" type="number" value="100" />
+          <attr key="targetItem" type="number" value="26427" />
+        </attrs>
+      </spawn>
+    </spawns>
+  </area>
+
+</randomItemSpawner>

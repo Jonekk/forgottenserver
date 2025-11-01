@@ -495,6 +495,14 @@ class ItemAttributes
 			return false;
 		}
 
+		bool clearCustomAttributes() {
+			if (CustomAttributeMap* customAttrMap = getCustomAttributeMap()) {
+				customAttrMap->clear();
+				return true;
+			}
+			return false;
+		}
+
 		const static uint32_t intAttributeTypes = ITEM_ATTRIBUTE_ACTIONID | ITEM_ATTRIBUTE_UNIQUEID | ITEM_ATTRIBUTE_DATE
 			| ITEM_ATTRIBUTE_WEIGHT | ITEM_ATTRIBUTE_ATTACK | ITEM_ATTRIBUTE_DEFENSE | ITEM_ATTRIBUTE_EXTRADEFENSE
 			| ITEM_ATTRIBUTE_ARMOR | ITEM_ATTRIBUTE_HITCHANCE | ITEM_ATTRIBUTE_SHOOTRANGE | ITEM_ATTRIBUTE_OWNER
@@ -656,6 +664,13 @@ class Item : virtual public Thing
 				return false;
 			}
 			return getAttributes()->removeCustomAttribute(key);
+		}
+
+		bool clearCustomAttributes() {
+			if (!attributes) {
+				return false;
+			}
+			return getAttributes()->clearCustomAttributes();
 		}
 
 		void setSpecialDescription(const std::string& desc) {
@@ -1048,6 +1063,10 @@ class Item : virtual public Thing
 		void onDecay();
 
 		void setWeight(int64_t value);
+		void resetWeight();
+
+		void setQuality(int64_t value);
+		int64_t getQuality();
 
 	protected:
 		Cylinder* parent = nullptr;

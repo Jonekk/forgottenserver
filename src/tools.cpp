@@ -805,6 +805,12 @@ std::string getSkillName(uint8_t skillid)
 
 		case SKILL_HUNTING:
 			return "hunting";
+		
+		case SKILL_HERBALISM:
+			return "herbalism";
+
+		case SKILL_ALCHEMY:
+			return "alchemy";
 
 		case SKILL_MAGLEVEL:
 			return "magic level";

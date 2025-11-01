@@ -60,6 +60,11 @@ enum tradestate_t : uint8_t {
 	TRADE_TRANSFER,
 };
 
+struct LearnedHerb {
+	uint32_t herbId;
+	uint32_t fluency;
+};
+
 struct VIPEntry {
 	VIPEntry(uint32_t guid, std::string name, std::string description, uint32_t icon, bool notify) :
 		guid(guid), name(std::move(name)), description(std::move(description)), icon(icon), notify(notify) {}
@@ -1148,6 +1153,9 @@ class Player final : public Creature, public Cylinder
 		void forgetInstantSpell(const std::string& spellName);
 		bool hasLearnedInstantSpell(const std::string& spellName) const;
 
+		uint32_t getHerbFluency(uint32_t herbId);
+		void addHerbFluency(uint32_t herbId, uint32_t fluency);
+
 		void updateRegeneration();
 
 	private:
@@ -1214,6 +1222,7 @@ class Player final : public Creature, public Cylinder
 		std::forward_list<uint32_t> modalWindows;
 		std::forward_list<std::string> learnedInstantSpellList;
 		std::forward_list<Condition*> storedConditionList; // TODO: This variable is only temporarily used when logging in, get rid of it somehow
+		std::forward_list<LearnedHerb> learnedHerbs;
 
 		std::string name;
 		std::string guildNick;

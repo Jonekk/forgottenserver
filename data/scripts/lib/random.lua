@@ -3,5 +3,7 @@ function randomBetween(min, max)
 end
 
 function randomChance(chance)
-    return chance >= math.random(100)
+    local roll = math.random(100)
+    print(roll .. " / " .. chance)
+    return chance >= roll
 end

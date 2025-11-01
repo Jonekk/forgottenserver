@@ -22,14 +22,17 @@ function onUse(player, item, fromPosition, target, toPosition, isHotkey)
         player:addSkillTries(SKILL_CRAFTING, workOnUse)
         if workAfterUse == workRequired then
             local productId = item:getCustomAttribute("bp")
-            local productItem = player:addItem(productId, 1, true, 0)
+            local count = item:getCustomAttribute("bp_count")
             local bp_quality = item:getCustomAttribute("bp_quality")
             local bp_durability = item:getCustomAttribute("bp_durability")
-            local bp_durability = item:getCustomAttribute("bp_durability")
-            if bp_quality then productItem:setCustomAttribute("quality", round(bp_quality)) end
-            if bp_durability then productItem:setCustomAttribute("durability", round(bp_durability)) end
-            if bp_durability then productItem:setCustomAttribute("durability_max", round(bp_durability)) end
-            item:remove(1)
+            -- local productItem = player:addItem(productId, count, true, 0)
+            item:transform(productId, count)
+            item:resetWeight()
+            item:clearCustomAttributes()
+            if bp_quality then item:setQuality(round(bp_quality)) end
+            if bp_durability then item:setCustomAttribute("durability", round(bp_durability)) end
+            if bp_durability then item:setCustomAttribute("durability_max", round(bp_durability)) end
+            --item:remove(1)
             item:getPosition():sendMagicEffect(CONST_ME_MAGIC_GREEN)
         else
             item:setCustomAttribute("work", workAfterUse)

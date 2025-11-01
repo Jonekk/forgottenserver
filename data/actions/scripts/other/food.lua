@@ -138,7 +138,7 @@ local function specialFoodEffect(player, item)
 		return false
 	end
 	for effectId, effectInfo in pairs(effectsList) do
-		local itemQuality = item:getCustomAttribute("quality")
+		local itemQuality = item:getQuality()
 		if not itemQuality then itemQuality = 100 end
 
 		local randomval = math.random(100)

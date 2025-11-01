@@ -17,6 +17,7 @@ local function eligible(player, recipe)
 end
 
 -- Build filtered list of lines (no pagination yet)
+-- TODO cache that
 local function buildRecipesLines()
   local lines = {}
     --if not eligible(player, r, station) then return end
@@ -26,11 +27,20 @@ local function buildRecipesLines()
     --  if not name:find(search:lower(), 1, true) then return end
     --end
 
-  for id, r in pairs(CRAFT.recipes) do
-    lines[#lines+1] = serializeRecipe(id, r)
+  for _, recipe in ipairs(CRAFTING_GENERAL.recipes) do
+    lines[#lines+1] = serializeRecipe(recipe)
   end
+  --for _, r in ipairs(CRAFT.simpleRecipes) do
+  --  r.simple = true
+  --  lines[#lines+1] = serializeRecipe(r.itemId, r)
+  --end
 
-  table.sort(lines) -- deterministic
+  -- sort by required level (ascending in difficulty)
+  table.sort(lines, function(a, b)
+    local a3 = tonumber(a:match("^[^;]+;[^;]+;([^;]+)"))
+    local b3 = tonumber(b:match("^[^;]+;[^;]+;([^;]+)"))
+    return a3 < b3
+  end)
   return lines
 end
 
@@ -42,9 +52,9 @@ local function buildLegend()
   translationLinesCache = ""
 
   local uniqueItems = {}
-  for id, r in pairs(CRAFT.recipes) do
-    if not table.contains(uniqueItems, id) then
-      table.insert(uniqueItems, id)
+  for _, r in ipairs(CRAFTING_GENERAL.recipes) do
+    if not table.contains(uniqueItems, r.itemId) then
+      table.insert(uniqueItems, r.itemId)
     end
     for matId, matInfo in pairs(r.materials) do
       if not table.contains(uniqueItems, matId) then
@@ -52,12 +62,12 @@ local function buildLegend()
       end
     end
   end
+
   for _, itemId in ipairs(uniqueItems) do
     local serverId = itemId
     local it = ItemType(itemId)
     local clientId = it:getClientId()
     local itemName = it:getName()
-    print("legend", serverId, clientId, itemName)
     translationLinesCache = translationLinesCache .. string.format("%d;%d;%s\n", serverId, clientId, itemName)
   end
   return translationLinesCache
@@ -66,12 +76,12 @@ end
 materialsListCache = nil
 
 local function buildPlayerState(player)
-  local playerState = string.format("CRAFTLVL:%d;", 1)
+  local playerState = string.format("craftlvl:%d\n", player:getSkillLevel(SKILL_CRAFTING))
 
   -- materials list
   if materialsListCache == nil then
     materialsListCache = {}
-    for id, r in pairs(CRAFT.recipes) do
+    for id, r in pairs(CRAFTING_GENERAL.recipes) do
       for matId, matInfo in pairs(r.materials) do
         if not table.contains(materialsListCache, matId) then
           table.insert(materialsListCache, matId)
@@ -83,7 +93,6 @@ local function buildPlayerState(player)
   for _, itemId in ipairs(materialsListCache) do
     local serverId = itemId
     local itemCount = player:getItemCount(itemId)
-    print("player_state", serverId, itemCount)
     playerState = playerState .. string.format("%d;%d\n", serverId, itemCount)
   end
   return playerState
@@ -97,7 +106,7 @@ local function sendPaged(player, msgid, lines, page, per)
   local from = (page - 1) * per + 1
   local to   = math.min(#lines, page * per)
 
-  local header = string.format("MSG:%s\nVER:%d;PAGE:%d/%d", msgid, CRAFT.version, page, totalPages)
+  local header = string.format("%s\nPAGE:%d/%d", msgid, page, totalPages)
   local buf = { header }
   local size = #header + 1
 
@@ -111,7 +120,7 @@ local function sendPaged(player, msgid, lines, page, per)
     buf[#buf+1] = ln
     size = size + add
   end
-
+  print("TX:\n", table.concat(buf, "\n"))
   player:sendExtendedOpcode(OP_CRAFT, table.concat(buf, "\n"))
 end
 
@@ -122,6 +131,7 @@ end
 
 function craftingOnExtendedOpcode(player, opcode, buffer)
   if opcode ~= OP_CRAFT then return true end
+  print("RX: ", buffer)
 
   local verb = buffer:match("^(%S+)")
   if verb == "recipes" then
@@ -137,12 +147,11 @@ function craftingOnExtendedOpcode(player, opcode, buffer)
     sendPaged(player, "recipes", lines, page, per)
     return true
   elseif verb == "craft" then
-    local id = tonumber(token(buffer, "id", "-1")) or -1
-    local r = CRAFT.recipes[id]
-    if not r or not eligible(player, r) then
-      player:sendExtendedOpcode(OP_CRAFT, "ERR not_eligible")
-      return true
-    end
+    local recipeId = token(buffer, "recipeId", "")
+    local grade = tonumber(token(buffer, "grade", "-1")) or -1
+    local count = tonumber(token(buffer, "count", "-1")) or -1
+    local r = CRAFTING_GENERAL.recipes[id]
+    local success = craft_general(player, recipeId, grade, count)
 
     -- TODO: enforce ingredients & stamina, capacity, etc. (example skeleton):
     -- for mid, data in pairs(r.materials or {}) do
@@ -154,18 +163,16 @@ function craftingOnExtendedOpcode(player, opcode, buffer)
     -- for mid, data in pairs(r.materials or {}) do
     --   player:removeItem(mid, data.count or 1)
     -- end
-
-    local outCount = r.outputCount or 1
-    player:addItem(id, outCount)
-    player:sendExtendedOpcode(OP_CRAFT, ("DONE id=%d"):format(id))
+    local successStr = success and '1' or '0'
+    player:sendExtendedOpcode(OP_CRAFT, string.format("craft\nrecipeId=%s success=%d", recipeId, successStr))
     return true
   elseif verb == "legend" then
     local legendBuf = buildLegend()
-    player:sendExtendedOpcode(OP_CRAFT, "MSG:legend\n" .. legendBuf)
+    player:sendExtendedOpcode(OP_CRAFT, "legend\n" .. legendBuf)
     return true
   elseif verb == "player_state" then
     local playerStateBuf = buildPlayerState(player)
-    player:sendExtendedOpcode(OP_CRAFT, "MSG:player_state\n" .. playerStateBuf)
+    player:sendExtendedOpcode(OP_CRAFT, "player_state\n" .. playerStateBuf)
     return true
   else
     player:sendExtendedOpcode(OP_CRAFT, "ERR unknown_cmd")

@@ -1,9 +1,9 @@
 local config = {
 	[ITEM_STONE_AXE] = {
-        [2720] = {staminaRequired = 5, productItems = {[ITEM_WOODEN_STICK] = {chance = 60}}, chanceDestroy = 10, destroyTime=10}, -- dead tree
-        [2717] = {staminaRequired = 5, productItems = {[ITEM_WOODEN_STICK] = {chance = 60}}, chanceDestroy = 10, destroyTime=10}, -- dead tree
-        [2714] = {staminaRequired = 5, productItems = {[ITEM_WOODEN_STICK] = {chance = 60}}, chanceDestroy = 10, destroyTime=10}, -- dead tree
-        [2709] = {staminaRequired = 5, productItems = {[ITEM_WOODEN_STICK] = {chance = 60}}, chanceDestroy = 10, destroyTime=10}, -- dead tree
+        [2720] = {staminaRequired = 5, productItems = {[ITEM_WOODEN_STICK] = {chance = 60}}, chanceDestroy = 10, destroyTime=10, destroyTo=8786}, -- dead tree
+        [2717] = {staminaRequired = 5, productItems = {[ITEM_WOODEN_STICK] = {chance = 60}}, chanceDestroy = 10, destroyTime=10, destroyTo=8786}, -- dead tree
+        [2714] = {staminaRequired = 5, productItems = {[ITEM_WOODEN_STICK] = {chance = 60}}, chanceDestroy = 10, destroyTime=10, destroyTo=8786}, -- dead tree
+        [2709] = {staminaRequired = 5, productItems = {[ITEM_WOODEN_STICK] = {chance = 60}}, chanceDestroy = 10, destroyTime=10, destroyTo=8786}, -- dead tree
     },
 	[ITEM_STONE_PICK] = {
         -- small stones
@@ -29,6 +29,7 @@ local config = {
 }
 
 local skillsPerToolUse = {
+    [ITEM_STONE_AXE] = {},
     [ITEM_STONE_PICK] = { [SKILL_MINING] = { skillTriesPerStamina = 1} }
 }
 
@@ -48,12 +49,11 @@ function onUse(player, item, fromPosition, target, toPosition, isHotkey)
     end
 
     if player:useStamina(cfgTarget.staminaRequired) then
-
         -- generate products
         for productId, productInfo in pairs(cfgTarget.productItems) do
             local random = math.random(100)
             local chance = productInfo.chance
-            local itemQuality = item:getCustomAttribute("quality")
+            local itemQuality = item:getQuality()
             if itemQuality then
                 chance = adjustChanceByQuality(chance, itemQuality)
             end
@@ -64,9 +64,18 @@ function onUse(player, item, fromPosition, target, toPosition, isHotkey)
         local random = math.random(100)
         if random < cfgTarget.chanceDestroy then
             toPosition:sendMagicEffect(CONST_ME_POFF)
+            player:sendTextMessage(MESSAGE_DAMAGE_DEALT, "", toPosition, 10, TEXTCOLOR_RED)
             local destroyedTime = gaussianRandom20p(cfgTarget.destroyTime * 1000)
-            target:setCustomAttribute("destroyedUntil", os:mtime() + destroyedTime)
+            if cfgTarget.destroyTo then
+                local targetLiveId = target:getId()
+                target:transform(cfgTarget.destroyTo)
+                target:setDuration(destroyedTime)
+                target:decay(targetLiveId)
+            else 
+                target:setCustomAttribute("destroyedUntil", os:mtime() + destroyedTime)
+            end
         else
+            player:sendTextMessage(MESSAGE_DAMAGE_DEALT, "", toPosition, 10, TEXTCOLOR_RED)
             toPosition:sendMagicEffect(CONST_ME_HITAREA)
         end
 

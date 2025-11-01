@@ -1220,6 +1220,8 @@ ReturnValue Game::internalMoveItem(Cylinder* fromCylinder, Cylinder* toCylinder,
 	Item* updateItem = nullptr;
 	fromCylinder->removeThing(item, m);
 
+	g_randomItemSpawner.onItemRemoved(item);
+
 	//update item(s)
 	if (item->isStackable()) {
 		uint32_t n;
@@ -1880,6 +1882,8 @@ Item* Game::transformItem(Item* item, uint16_t newId, int32_t newCount /*= -1*/)
 	if (newType.id == 0) {
 		return item;
 	}
+
+	g_randomItemSpawner.onItemRemoved(item);
 
 	const ItemType& curType = Item::items[item->getID()];
 	if (curType.alwaysOnTop != newType.alwaysOnTop) {

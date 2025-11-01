@@ -1,5 +1,6 @@
-local OPCODE_LANGUAGE = 1
-local OPCODE_CRAFTING = 120
+OPCODE_LANGUAGE = 1
+OPCODE_CRAFTING = 120
+OPCODE_HERBALISM = 121
 
 function onExtendedOpcode(player, opcode, buffer)
 	if opcode == OPCODE_LANGUAGE then
@@ -10,6 +11,8 @@ function onExtendedOpcode(player, opcode, buffer)
 		end
 	elseif opcode == OPCODE_CRAFTING then
 		craftingOnExtendedOpcode(player, opcode, buffer)
+	elseif opcode == OPCODE_HERBALISM then
+		herbalismOnExtendedOpcode(player, opcode, buffer)
 	else
 		-- other opcodes can be ignored, and the server will just work fine...
 	end

@@ -4048,6 +4048,34 @@ bool Player::hasLearnedInstantSpell(const std::string& spellName) const
 	return false;
 }
 
+uint32_t Player::getHerbFluency(uint32_t herbId)
+{
+	auto herbFluencyIt = std::find_if(
+        learnedHerbs.begin(), learnedHerbs.end(),
+        [herbId](const LearnedHerb& h) {
+            return h.herbId == herbId;
+        });
+	if (herbFluencyIt == learnedHerbs.end()) {
+		return 0;
+	}
+	return herbFluencyIt->fluency;
+}
+
+void Player::addHerbFluency(uint32_t herbId, uint32_t fluency)
+{
+	auto herbFluencyIt = std::find_if(
+        learnedHerbs.begin(), learnedHerbs.end(),
+        [herbId](const LearnedHerb& h) {
+            return h.herbId == herbId;
+        });
+	if (herbFluencyIt == learnedHerbs.end()) {
+		LearnedHerb lh = { .herbId = herbId, .fluency = fluency};
+		learnedHerbs.emplace_front(lh);
+	} else {
+		herbFluencyIt->fluency += fluency;
+	}
+}
+
 bool Player::isInWar(const Player* player) const
 {
 	if (!player || !guild) {

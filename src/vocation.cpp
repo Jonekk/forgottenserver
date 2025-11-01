@@ -149,6 +149,8 @@ static const uint32_t skillBase[SKILL_LAST + 1] = {
 	100, // SKILL_MINING
 	100, // SKILL_FARMING
 	100, // SKILL_HUNTING
+	100, // SKILL_HERBALISM
+	100, // SKILL_ALCHEMY
 };
 
 uint64_t Vocation::getReqSkillTries(uint8_t skill, uint16_t level)

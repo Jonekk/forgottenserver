@@ -130,7 +130,7 @@ function onUse(player, item, fromPosition, target, toPosition, isHotkey)
 
     if player:useStamina(cfg.staminaRequired) then
         player:addSkillTries(SKILL_FARMING, cfg.staminaRequired)
-        local itemQuality = item:getCustomAttribute("quality")
+        local itemQuality = item:getQuality()
         if not itemQuality then itemQuality = 100 end
 
         local chanceGet = adjustChanceByQuality(cfg.chanceGet, itemQuality)

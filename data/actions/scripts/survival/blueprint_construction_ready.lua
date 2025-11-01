@@ -17,7 +17,7 @@ function onUse(player, item, fromPosition, target, toPosition, isHotkey)
     local bp_quality = item:getCustomAttribute("bp_quality")
     local bp_durability = item:getCustomAttribute("bp_durability")
 
-    if bp_quality then productItem:setCustomAttribute("quality", round(bp_quality)) end
+    if bp_quality then productItem:setQuality(round(bp_quality)) end
     if bp_durability then 
         productItem:setCustomAttribute("durability", round(bp_durability))
         productItem:setCustomAttribute("durability_max", round(bp_durability))

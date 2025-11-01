@@ -1665,6 +1665,8 @@ void LuaScriptInterface::registerFunctions()
 	registerEnum(SKILL_MINING)
 	registerEnum(SKILL_FARMING)
 	registerEnum(SKILL_HUNTING)
+	registerEnum(SKILL_HERBALISM)
+	registerEnum(SKILL_ALCHEMY)
 	registerEnum(SKILL_MAGLEVEL)
 	registerEnum(SKILL_LEVEL)
 
@@ -2239,6 +2241,10 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Item", "getCustomAttribute", LuaScriptInterface::luaItemGetCustomAttribute);
 	registerMethod("Item", "setCustomAttribute", LuaScriptInterface::luaItemSetCustomAttribute);
 	registerMethod("Item", "removeCustomAttribute", LuaScriptInterface::luaItemRemoveCustomAttribute);
+	registerMethod("Item", "clearCustomAttributes", LuaScriptInterface::luaItemClearCustomAttributes);
+
+	registerMethod("Item", "setQuality", LuaScriptInterface::luaItemSetQuality);
+	registerMethod("Item", "getQuality", LuaScriptInterface::luaItemGetQuality);
 
 	registerMethod("Item", "moveTo", LuaScriptInterface::luaItemMoveTo);
 	registerMethod("Item", "transform", LuaScriptInterface::luaItemTransform);
@@ -2258,6 +2264,7 @@ void LuaScriptInterface::registerFunctions()
 
 	registerMethod("Item", "damageItem", LuaScriptInterface::luaItemDamageItem);
 	registerMethod("Item", "setWeight", LuaScriptInterface::luaItemSetWeight);
+	registerMethod("Item", "resetWeight", LuaScriptInterface::luaItemResetWeight);
 
 	registerMethod("Item", "getDuration", LuaScriptInterface::luaItemGetDuration);
 	registerMethod("Item", "setDuration", LuaScriptInterface::luaItemSetDuration);
@@ -2539,6 +2546,9 @@ void LuaScriptInterface::registerFunctions()
 
 	registerMethod("Player", "getInstantSpells", LuaScriptInterface::luaPlayerGetInstantSpells);
 	registerMethod("Player", "canCast", LuaScriptInterface::luaPlayerCanCast);
+
+	registerMethod("Player", "getHerbFluency", LuaScriptInterface::luaPlayerGetHerbFluency);
+	registerMethod("Player", "addHerbFluency", LuaScriptInterface::luaPlayerAddHerbFluency);
 
 	registerMethod("Player", "hasChaseMode", LuaScriptInterface::luaPlayerHasChaseMode);
 	registerMethod("Player", "hasSecureMode", LuaScriptInterface::luaPlayerHasSecureMode);
@@ -6810,6 +6820,42 @@ int LuaScriptInterface::luaItemRemoveCustomAttribute(lua_State* L) {
 	return 1;
 }
 
+int LuaScriptInterface::luaItemClearCustomAttributes(lua_State* L) {
+	// item:clearCustomAttributes()
+	Item* item = getUserdata<Item>(L, 1);
+	if (!item) {
+		lua_pushnil(L);
+		return 1;
+	}
+	pushBoolean(L, item->clearCustomAttributes());
+	return 1;
+}
+
+int LuaScriptInterface::luaItemGetQuality(lua_State* L)
+{
+	// item:getActionId()
+	Item* item = getUserdata<Item>(L, 1);
+	if (item) {
+		lua_pushnumber(L, item->getQuality());
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaItemSetQuality(lua_State* L)
+{
+	uint32_t quality = getNumber<uint32_t>(L, 2);
+	Item* item = getUserdata<Item>(L, 1);
+	if (item) {
+		item->setQuality(quality);
+		pushBoolean(L, true);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
 int LuaScriptInterface::luaItemMoveTo(lua_State* L)
 {
 	// item:moveTo(position or cylinder[, flags])
@@ -7064,7 +7110,19 @@ int LuaScriptInterface::luaItemSetWeight(lua_State* L)
 		item->setWeight(weight);
 		pushBoolean(L, true);
 	} else {
-		lua_pushnil(L);
+		pushBoolean(L, false);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaItemResetWeight(lua_State* L)
+{
+	Item* item = getUserdata<Item>(L, 1);
+	if (item) {
+		item->resetWeight();
+		pushBoolean(L, true);
+	} else {
+		pushBoolean(L, false);
 	}
 	return 1;
 }
@@ -10208,6 +10266,31 @@ int LuaScriptInterface::luaPlayerHasLearnedSpell(lua_State* L)
 	if (player) {
 		const std::string& spellName = getString(L, 2);
 		pushBoolean(L, player->hasLearnedInstantSpell(spellName));
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetHerbFluency(lua_State* L)
+{
+	// player:getHerbFluency()
+	Player* player = getUserdata<Player>(L, 1);
+	if (player and isNumber(L, 2)) {
+		lua_pushinteger(L, player->getHerbFluency(getNumber<uint32_t>(L, 2)));
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerAddHerbFluency(lua_State* L)
+{
+	// player:addHerbFluency()
+	Player* player = getUserdata<Player>(L, 1);
+	if (player and isNumber(L, 2) and isNumber(L, 3)) {
+		player->addHerbFluency(getNumber<uint32_t>(L, 2), getNumber<uint32_t>(L, 3));
+		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);
 	}

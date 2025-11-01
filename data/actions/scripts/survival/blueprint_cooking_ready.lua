@@ -14,7 +14,7 @@ function onUse(player, item, fromPosition, target, toPosition, isHotkey)
     end
 
     local productItem = player:addItem(productId)
-    productItem:setCustomAttribute("quality", round(item:getCustomAttribute("bp_quality")))
+    productItem:setQuality(round(item:getCustomAttribute("bp_quality")))
     item:getPosition():sendMagicEffect(CONST_ME_MAGIC_GREEN)
     item:remove(1)
 	return true

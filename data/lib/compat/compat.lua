@@ -1463,6 +1463,8 @@ do
 		[SKILL_MINING] = 'mining',
 		[SKILL_FARMING] = 'farming',
 		[SKILL_HUNTING] = 'hunting',
+		[SKILL_HERBALISM] = 'herbalism',
+		[SKILL_ALCHEMY] = 'alchemy',
 		[SKILL_MAGLEVEL] = 'magic level',
 		[SKILL_LEVEL] = 'level'
 	}

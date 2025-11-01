@@ -1,0 +1,13 @@
+--CRAFTING = CRAFTING or { recipes = {} }
+--
+--for itemId, recipe in pairs(craftingRecipes) do
+--  local recipeId = #CRAFTING.recipes + 1
+--  CRAFTING.recipes[recipeId] = { recipeId = recipeId, recipe = recipe }
+--  CRAFTING.recipes[recipeId]:recipe:itemId = itemId
+--end
+--
+--for _, recipe in ipairs(craftingSimpleRecipes) do
+--  local recipeId = #CRAFTING.recipes + 1
+--  CRAFTING.recipes[recipeId] = { recipeId = recipeId, recipe = recipe }
+--  CRAFTING.recipes[recipeId]:recipe:simple = true
+--end

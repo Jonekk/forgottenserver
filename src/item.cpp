@@ -1464,9 +1464,14 @@ std::string Item::getDescription(const ItemType& it, int32_t lookDistance,
 	}
 
 	if (item) {
-		const ItemAttributes::CustomAttribute* qualityAttr = item->getCustomAttribute("quality");
+		const ItemAttributes::CustomAttribute* qualityAttr = item->getCustomAttribute("Q");
 		if (qualityAttr) {
 			s << "\nQuality: " << qualityAttr->value << ".";
+		}
+
+		const ItemAttributes::CustomAttribute* purityAttr = item->getCustomAttribute("Purity");
+		if (purityAttr) {
+			s << "\nPurity: " << purityAttr->value << ".";
 		}
 
 		const ItemAttributes::CustomAttribute* durabilityAttr = item->getCustomAttribute("durability");
@@ -1606,7 +1611,12 @@ std::string Item::getNameDescription(const ItemType& it, const Item* item /*= nu
 		}
 		const ItemAttributes::CustomAttribute* bpAttr = item->getCustomAttribute("bp");
 		if (bpAttr) {
-			s << " of " << Item::items.getItemType(boost::get<int64_t>(bpAttr->value)).name;
+			const ItemAttributes::CustomAttribute* bpCountAttr = item->getCustomAttribute("bp_count");
+			if (bpCountAttr) {
+				s << " of " << boost::get<int64_t>(bpCountAttr->value) << "x "<< Item::items.getItemType(boost::get<int64_t>(bpAttr->value)).name;
+			} else {
+				s << " of " << Item::items.getItemType(boost::get<int64_t>(bpAttr->value)).name;
+			}
 		}
 	} else {
 		if (addArticle) {
@@ -1679,7 +1689,7 @@ bool Item::canDecay() const
 	}
 
 	const ItemType& it = Item::items[id];
-	if (getDecayTo() < 0 || it.decayTime == 0) {
+	if (getDecayTo() < 0 || (it.decayTime == 0 && getDuration() == 0)) {
 		return false;
 	}
 
@@ -1788,6 +1798,23 @@ void Item::setWeight(int64_t value)
 		parentContainer->updateItemWeight(weightDiff);
 		parentContainer->postAddNotification(this, parentContainer, parentContainer->getThingIndex(this));
 	}
+}
+
+void Item::resetWeight()
+{
+	getAttributes()->removeAttribute(ITEM_ATTRIBUTE_WEIGHT);
+}
+
+void Item::setQuality(int64_t value)
+{
+	std::string key = "Q";
+	setCustomAttribute<int64_t>(key, value);
+}
+
+int64_t Item::getQuality()
+{
+	const ItemAttributes::CustomAttribute* qualityAttr = getCustomAttribute("Q");
+	return qualityAttr ?  boost::get<int64_t>(qualityAttr->value) : 0;
 }
 
 std::string ItemAttributes::emptyString;

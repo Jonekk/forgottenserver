@@ -102,6 +102,8 @@ class Vocation
 			1.35, // SKILL_MINING
 			1.35, // SKILL_FARMING
 			1.35, // SKILL_HUNTING
+			1.35, // SKILL_HERBALISM
+			1.35, // SKILL_ALCHEMY
 		};
 		float manaMultiplier = 4.0f;
 

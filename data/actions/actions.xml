@@ -223,5 +223,8 @@
 	<action itemid="26424" script="survival/trap_open.lua" />
 	<action itemid="26425" script="survival/trap.lua" />
 	<action itemid="26426" script="survival/trap_open.lua" />
+
+	<action itemid="26427" script="survival/herb.lua" />
+	<action itemid="26429" script="survival/herb_unidentified.lua" />
 	
 </actions>

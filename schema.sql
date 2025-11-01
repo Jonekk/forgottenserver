@@ -327,6 +327,13 @@ CREATE TABLE IF NOT EXISTS `player_spells` (
   FOREIGN KEY (`player_id`) REFERENCES `players`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARACTER SET=utf8;
 
+CREATE TABLE IF NOT EXISTS `player_herbs` (
+  `player_id` int NOT NULL,
+  `herb_id` int unsigned NOT NULL,
+  `fluency` int unsigned NOT NULL DEFAULT '0',
+  FOREIGN KEY (`player_id`) REFERENCES `players`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARACTER SET=utf8;
+
 CREATE TABLE IF NOT EXISTS `player_storage` (
   `player_id` int NOT NULL DEFAULT '0',
   `key` int unsigned NOT NULL DEFAULT '0',

@@ -19,7 +19,7 @@ function onUse(player, item, fromPosition, target, toPosition, isHotkey)
     local bp_watering = item:getCustomAttribute("bp_watering")
     local bp_fertility = item:getCustomAttribute("bp_fertility")
 
-    if bp_quality then productItem:setCustomAttribute("quality", round(bp_quality)) end
+    if bp_quality then productItem:setQuality(round(bp_quality)) end
     if bp_durability then 
         productItem:setCustomAttribute("durability", round(bp_durability))
         productItem:setCustomAttribute("durability_max", round(bp_durability))

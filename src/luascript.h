@@ -749,6 +749,10 @@ class LuaScriptInterface
 		static int luaItemGetCustomAttribute(lua_State* L);
 		static int luaItemSetCustomAttribute(lua_State* L);
 		static int luaItemRemoveCustomAttribute(lua_State* L);
+		static int luaItemClearCustomAttributes(lua_State* L);
+		static int luaItemGetQuality(lua_State* L);
+		static int luaItemSetQuality(lua_State* L);
+
 
 		static int luaItemMoveTo(lua_State* L);
 		static int luaItemTransform(lua_State* L);
@@ -769,6 +773,7 @@ class LuaScriptInterface
 		static int luaItemDamageItem(lua_State* L);
 
 		static int luaItemSetWeight(lua_State* L);
+		static int luaItemResetWeight(lua_State* L);
 
 		static int luaItemGetDuration(lua_State* L);
 		static int luaItemSetDuration(lua_State* L);
@@ -1024,6 +1029,9 @@ class LuaScriptInterface
 		static int luaPlayerLearnSpell(lua_State* L);
 		static int luaPlayerForgetSpell(lua_State* L);
 		static int luaPlayerHasLearnedSpell(lua_State* L);
+
+		static int luaPlayerGetHerbFluency(lua_State* L);
+		static int luaPlayerAddHerbFluency(lua_State* L);
 
 		static int luaPlayerSendTutorial(lua_State* L);
 		static int luaPlayerAddMapMark(lua_State* L);

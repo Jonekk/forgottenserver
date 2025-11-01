@@ -13,7 +13,7 @@ function getItemId(itemIdOrName)
     end
 end
 
-function craft(player, itemId, recipe, skillId, blueprintId)
+function craft(player, recipe, skillId, blueprintId)
 
 	if recipe == nil then
 		player:sendCancelMessage("There is no such level of this recipe.")
@@ -41,16 +41,17 @@ function craft(player, itemId, recipe, skillId, blueprintId)
 
 	local result = Game.createItem(blueprintId)
 	if result then
-		result:setCustomAttribute("bp", itemId)
+		result:setCustomAttribute("bp", recipe.itemId)
 		result:setCustomAttribute("level", levelRequired)
 		result:setCustomAttribute("work", 0)
 		result:setCustomAttribute("work_max", recipe.staminaRequired)
-		result:setCustomAttribute("bp_quality", gaussianRandom20p(recipe.quality))
+		result:setCustomAttribute("bp_count", recipe.count)
+		if recipe.quality then result:setCustomAttribute("bp_quality", gaussianRandom20p(recipe.quality)) end
 		if recipe.durability then result:setCustomAttribute("bp_durability", gaussianRandom20p(recipe.durability)) end
 		if recipe.watering then result:setCustomAttribute("bp_watering", gaussianRandom20p(recipe.watering)) end
 		if recipe.fertility then result:setCustomAttribute("bp_fertility", gaussianRandom20p(recipe.fertility)) end
 
-		local targetItemWeight = ItemType(itemId):getWeight()
+		local targetItemWeight = ItemType(recipe.itemId):getWeight()
 		local weightChangePerWork = (targetItemWeight - sumWeight) / recipe.staminaRequired
 		result:setWeight(sumWeight)
 		result:setCustomAttribute("work_weight_change", weightChangePerWork)
@@ -60,20 +61,25 @@ function craft(player, itemId, recipe, skillId, blueprintId)
 	end
 end
 
-function serializeRecipe(itemId, recipe)
+function serializeRecipe(recipe)
 	local mats = {}
 	for itemId, data in pairs(recipe.materials or {}) do
 		table.insert(mats, itemId .. "x" .. data.count)
 	end
+	simple = recipe.simple and 1 or 0
+	multicraft = recipe.multicraft and 1 or 0
 	local line = string.format(
-		"%d;%d;%d;%d;%s;%s;%s",
-		itemId,
+		"%s;%d;%d;%d;%d;%s;%s;%s;%d;%d",
+		recipe.recipeId,
+		recipe.itemId,
 		recipe.levelRequired or 0,
 		recipe.staminaRequired or 0,
 		recipe.durability or 0,
 		table.concat(mats, ","),
 		recipe.category or "",
-		recipe.subcategory or ""
+		recipe.subcategory or "",
+		simple,
+		multicraft
 	)
 	return line
 end
@@ -86,26 +92,6 @@ function serializeRecipes(recipes)
 	end
 	return table.concat(lines, "\n")
   end
-
-function parseRecipes(data)
-  local recipes = {}
-  for line in data:gmatch("[^\n]+") do
-    local rid, level, stamina, dura, matsStr, cat, subcat = line:match("([^;]+);([^;]+);([^;]+);([^;]+);([^;]*);([^;]*);([^;]*)")
-    local mats = {}
-    for id, count in matsStr:gmatch("(%d+)x(%d+)") do
-      mats[tonumber(id)] = { count = tonumber(count) }
-    end
-    recipes[tonumber(rid)] = {
-      levelRequired = tonumber(level),
-      staminaRequired = tonumber(stamina),
-      durability = tonumber(dura),
-      materials = mats,
-      category = cat,
-      subcategory = subcat
-    }
-  end
-  return recipes
-end
 
 local function toLuaPretty(tbl, indent)
 	indent = indent or 0

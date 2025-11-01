@@ -21,12 +21,12 @@ function addTimber(player, item, fromPosition, target, toPosition, isHotkey)
     local itemId = item:getId()
     local decayTo = 0
     if fireSourcesEmpty[itemId] then
-        local quality = item:getCustomAttribute("quality")
+        local quality = item:getQuality()
         local durability = item:getCustomAttribute("durability")
         local durability_max = item:getCustomAttribute("durability_max")
         item:transform(fireSourcesEmpty[itemId].transformTo)
         
-        item:setCustomAttribute("quality", quality)
+        item:setQuality(quality)
         item:setCustomAttribute("durability", durability)
         item:setCustomAttribute("durability_max", durability_max)
 
