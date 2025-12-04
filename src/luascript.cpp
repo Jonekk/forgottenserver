@@ -1224,10 +1224,6 @@ void LuaScriptInterface::registerFunctions()
 	registerEnum(CONDITION_PARAM_TICKINTERVAL)
 	registerEnum(CONDITION_PARAM_FORCEUPDATE)
 	registerEnum(CONDITION_PARAM_SKILL_MELEE)
-	registerEnum(CONDITION_PARAM_SKILL_FIST)
-	registerEnum(CONDITION_PARAM_SKILL_CLUB)
-	registerEnum(CONDITION_PARAM_SKILL_SWORD)
-	registerEnum(CONDITION_PARAM_SKILL_AXE)
 	registerEnum(CONDITION_PARAM_SKILL_DISTANCE)
 	registerEnum(CONDITION_PARAM_SKILL_SHIELD)
 	registerEnum(CONDITION_PARAM_SKILL_FISHING)
@@ -1239,10 +1235,6 @@ void LuaScriptInterface::registerFunctions()
 	registerEnum(CONDITION_PARAM_STAT_MAGICPOINTSPERCENT)
 	registerEnum(CONDITION_PARAM_PERIODICDAMAGE)
 	registerEnum(CONDITION_PARAM_SKILL_MELEEPERCENT)
-	registerEnum(CONDITION_PARAM_SKILL_FISTPERCENT)
-	registerEnum(CONDITION_PARAM_SKILL_CLUBPERCENT)
-	registerEnum(CONDITION_PARAM_SKILL_SWORDPERCENT)
-	registerEnum(CONDITION_PARAM_SKILL_AXEPERCENT)
 	registerEnum(CONDITION_PARAM_SKILL_DISTANCEPERCENT)
 	registerEnum(CONDITION_PARAM_SKILL_SHIELDPERCENT)
 	registerEnum(CONDITION_PARAM_SKILL_FISHINGPERCENT)
@@ -1653,10 +1645,7 @@ void LuaScriptInterface::registerFunctions()
 
 	registerEnum(VOCATION_NONE)
 
-	registerEnum(SKILL_FIST)
-	registerEnum(SKILL_CLUB)
-	registerEnum(SKILL_SWORD)
-	registerEnum(SKILL_AXE)
+	registerEnum(SKILL_MELEE)
 	registerEnum(SKILL_DISTANCE)
 	registerEnum(SKILL_SHIELD)
 	registerEnum(SKILL_FISHING)
@@ -2246,6 +2235,9 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Item", "setQuality", LuaScriptInterface::luaItemSetQuality);
 	registerMethod("Item", "getQuality", LuaScriptInterface::luaItemGetQuality);
 
+	registerMethod("Item", "setPurity", LuaScriptInterface::luaItemSetPurity);
+	registerMethod("Item", "getPurity", LuaScriptInterface::luaItemGetPurity);
+
 	registerMethod("Item", "moveTo", LuaScriptInterface::luaItemMoveTo);
 	registerMethod("Item", "transform", LuaScriptInterface::luaItemTransform);
 	registerMethod("Item", "decay", LuaScriptInterface::luaItemDecay);
@@ -2262,7 +2254,13 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Item", "isCreationItem", LuaScriptInterface::luaItemIsCreationItem);
 	registerMethod("Item", "updateConstructionItem", LuaScriptInterface::luaItemUpdateConstructionItem);
 
-	registerMethod("Item", "damageItem", LuaScriptInterface::luaItemDamageItem);
+	registerMethod("Item", "addDurability", LuaScriptInterface::luaItemAddDurability);
+	registerMethod("Item", "getDurability", LuaScriptInterface::luaItemGetDurability);
+	registerMethod("Item", "setDurability", LuaScriptInterface::luaItemSetDurability);
+	registerMethod("Item", "getMaxDurability", LuaScriptInterface::luaItemGetMaxDurability);
+	registerMethod("Item", "setMaxDurability", LuaScriptInterface::luaItemSetMaxDurability);
+
+
 	registerMethod("Item", "setWeight", LuaScriptInterface::luaItemSetWeight);
 	registerMethod("Item", "resetWeight", LuaScriptInterface::luaItemResetWeight);
 
@@ -2280,6 +2278,8 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Container", "getItems", LuaScriptInterface::luaContainerGetItems);
 	registerMethod("Container", "getItemHoldingCount", LuaScriptInterface::luaContainerGetItemHoldingCount);
 	registerMethod("Container", "getItemCountById", LuaScriptInterface::luaContainerGetItemCountById);
+
+	registerMethod("Container", "setCapacity", LuaScriptInterface::luaContainerSetCapacity);
 
 	registerMethod("Container", "getItem", LuaScriptInterface::luaContainerGetItem);
 	registerMethod("Container", "hasItem", LuaScriptInterface::luaContainerHasItem);
@@ -2464,8 +2464,8 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Player", "getGroup", LuaScriptInterface::luaPlayerGetGroup);
 	registerMethod("Player", "setGroup", LuaScriptInterface::luaPlayerSetGroup);
 
-	registerMethod("Player", "getStamina", LuaScriptInterface::luaPlayerGetStamina);
-	registerMethod("Player", "setStamina", LuaScriptInterface::luaPlayerSetStamina);
+	//registerMethod("Player", "getStamina", LuaScriptInterface::luaPlayerGetStamina);
+	//registerMethod("Player", "setStamina", LuaScriptInterface::luaPlayerSetStamina);
 
 	registerMethod("Player", "getSoul", LuaScriptInterface::luaPlayerGetSoul);
 	registerMethod("Player", "addSoul", LuaScriptInterface::luaPlayerAddSoul);
@@ -2557,7 +2557,7 @@ void LuaScriptInterface::registerFunctions()
 	registerMethod("Player", "getStoreInbox", LuaScriptInterface::luaPlayerGetStoreInbox);
 	registerMethod("Player", "useStamina", LuaScriptInterface::luaPlayerUseStamina);
 	registerMethod("Player", "changeStamina", LuaScriptInterface::luaPlayerChangeStamina);
-	
+	registerMethod("Player", "getStamina", LuaScriptInterface::luaPlayerGetStamina);	
 
 	// Monster
 	registerClass("Monster", "Creature", LuaScriptInterface::luaMonsterCreate);
@@ -6845,10 +6845,37 @@ int LuaScriptInterface::luaItemGetQuality(lua_State* L)
 
 int LuaScriptInterface::luaItemSetQuality(lua_State* L)
 {
+	// item:setQuality(quality)
 	uint32_t quality = getNumber<uint32_t>(L, 2);
 	Item* item = getUserdata<Item>(L, 1);
 	if (item) {
 		item->setQuality(quality);
+		pushBoolean(L, true);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaItemGetPurity(lua_State* L)
+{
+	// item:getPurity()
+	Item* item = getUserdata<Item>(L, 1);
+	if (item) {
+		lua_pushnumber(L, item->getPurity());
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaItemSetPurity(lua_State* L)
+{
+	// item:setPurity(purity)
+	uint32_t purity = getNumber<uint32_t>(L, 2);
+	Item* item = getUserdata<Item>(L, 1);
+	if (item) {
+		item->setQuality(purity);
 		pushBoolean(L, true);
 	} else {
 		lua_pushnil(L);
@@ -7089,13 +7116,60 @@ int LuaScriptInterface::luaItemUpdateConstructionItem(lua_State* L)
 }
 
 
-int LuaScriptInterface::luaItemDamageItem(lua_State* L)
+int LuaScriptInterface::luaItemAddDurability(lua_State* L)
 {
-	uint16_t damage = getNumber<uint16_t>(L, 2);
+	int32_t delta = getNumber<int32_t>(L, 2);
 	Item* item = getUserdata<Item>(L, 1);
 	if (item) {
-		item->damageItem(damage);
-		pushBoolean(L, true);
+		int32_t newDurability = 0;
+		lua_pushnumber(L, item->addDurability(delta, &newDurability));
+		lua_pushnumber(L, newDurability);
+	} else {
+		lua_pushnil(L);
+	}
+	return 2;
+}
+
+int LuaScriptInterface::luaItemGetDurability(lua_State* L)
+{
+	Item* item = getUserdata<Item>(L, 1);
+	if (item) {
+		lua_pushnumber(L, item->getDurability());
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaItemSetDurability(lua_State* L)
+{
+	uint16_t val = getNumber<uint16_t>(L, 2);
+	Item* item = getUserdata<Item>(L, 1);
+	if (item) {
+		lua_pushnumber(L, item->setDurability(val));
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaItemGetMaxDurability(lua_State* L)
+{
+	Item* item = getUserdata<Item>(L, 1);
+	if (item) {
+		lua_pushnumber(L, item->getMaxDurability());
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaItemSetMaxDurability(lua_State* L)
+{
+	int16_t val = getNumber<int16_t>(L, 2);
+	Item* item = getUserdata<Item>(L, 1);
+	if (item) {
+		lua_pushnumber(L, item->setMaxDurability(val));
 	} else {
 		lua_pushnil(L);
 	}
@@ -7372,6 +7446,20 @@ int LuaScriptInterface::luaContainerGetItemCountById(lua_State* L)
 	lua_pushnumber(L, container->getItemTypeCount(itemId, subType));
 	return 1;
 }
+
+int LuaScriptInterface::luaContainerSetCapacity(lua_State* L)
+{
+	// container:setCapacity()
+	Container* container = getUserdata<Container>(L, 1);
+	if (container && isNumber(L, 2)) {
+		container->setCapacity(getNumber<uint16_t>(L, 2));
+		lua_pushboolean(L, true);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
 
 int LuaScriptInterface::luaContainerGetContentDescription(lua_State* L)
 {
@@ -7979,10 +8067,16 @@ int LuaScriptInterface::luaCreatureAddHealth(lua_State* L)
 
 	CombatDamage damage;
 	damage.primary.value = getNumber<int32_t>(L, 2);
-	if (damage.primary.value >= 0) {
-		damage.primary.type = COMBAT_HEALING;
-	} else {
-		damage.primary.type = COMBAT_UNDEFINEDDAMAGE;
+
+	CombatType_t combatType = getNumber<CombatType_t>(L, 3);
+	if (combatType) {
+		damage.primary.type = combatType;
+	} else  {
+		if (damage.primary.value >= 0) {
+			damage.primary.type = COMBAT_HEALING;
+		} else {
+			damage.primary.type = COMBAT_UNDEFINEDDAMAGE;
+		}
 	}
 	pushBoolean(L, g_game.combatChangeHealth(nullptr, creature, damage));
 	return 1;
@@ -9366,7 +9460,7 @@ int LuaScriptInterface::luaPlayerSetGroup(lua_State* L)
 	}
 	return 1;
 }
-
+/*
 int LuaScriptInterface::luaPlayerGetStamina(lua_State* L)
 {
 	// player:getStamina()
@@ -9393,7 +9487,7 @@ int LuaScriptInterface::luaPlayerSetStamina(lua_State* L)
 	}
 	return 1;
 }
-
+*/
 int LuaScriptInterface::luaPlayerGetSoul(lua_State* L)
 {
 	// player:getSoul()
@@ -10665,6 +10759,18 @@ int LuaScriptInterface::luaPlayerChangeStamina(lua_State* L)
 	if (player and isNumber(L, 2)) {
 		int32_t changedStamina = player->changeStamina(getNumber<uint32_t>(L, 2));
 		lua_pushinteger(L, changedStamina);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
+int LuaScriptInterface::luaPlayerGetStamina(lua_State* L)
+{
+	// player:getStamina()
+	Player* player = getUserdata<Player>(L, 1);
+	if (player) {
+		lua_pushnumber(L, player->getStamina());
 	} else {
 		lua_pushnil(L);
 	}

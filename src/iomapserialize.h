@@ -18,12 +18,18 @@ class IOMapSerialize
 
 		static bool saveHouse(House* house);
 
+		static bool saveConstructionItems();
+		static void loadConstructionItems(Map* map);
+
 	private:
 		static void saveItem(PropWriteStream& stream, const Item* item);
 		static void saveTile(PropWriteStream& stream, const Tile* tile);
 
 		static bool loadContainer(PropStream& propStream, Container* container);
 		static bool loadItem(PropStream& propStream, Cylinder* parent);
+
+		static bool loadConstructionContainer(PropStream& propStream, Container* container);
+		static Item* loadConstructionItem(PropStream& propStream, Cylinder* parent, uint16_t builderId = 0);
 };
 
 #endif

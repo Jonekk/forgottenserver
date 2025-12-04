@@ -212,7 +212,7 @@ class Weapon : public Event
 
 		std::string getScriptEventName() const override final;
 
-		bool executeUseWeapon(Player* player, const LuaVariant& var) const;
+		bool executeUseWeapon(Item* item, Player* player, const LuaVariant& var) const;
 		void onUsedWeapon(Player* player, Item* item, Tile* destTile) const;
 
 		static void decrementItemCount(Item* item);

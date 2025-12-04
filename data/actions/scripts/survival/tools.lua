@@ -80,12 +80,12 @@ function onUse(player, item, fromPosition, target, toPosition, isHotkey)
         end
 
         -- tool wearing down
-        local durability = item:getCustomAttribute("durability")
-        if durability and durability > 1 then
-            item:setCustomAttribute("durability", durability - 1)
-        else
-            item:remove(1)
-            player:sendTextMessage(MESSAGE_STATUS_SMALL, ("You broke the %s"):format(item:getName()))
+        local durability = item:getDurability()
+        if durability then
+            local delta, newDurability = item:addDurability(-1)
+            if newDurability == 0 then
+                player:sendTextMessage(MESSAGE_STATUS_SMALL, ("You broke the %s"):format(item:getName()))
+            end
         end
 
         -- skills increase

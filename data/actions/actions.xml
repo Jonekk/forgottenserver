@@ -23,8 +23,7 @@
 	<action itemid="2550" script="tools/scythe.lua" />
 	<action itemid="2553" script="tools/pick.lua" />
 	<action itemid="2566" script="tools/kitchen_knife.lua" />
-	<action itemid="2580" script="tools/fishing.lua" allowfaruse="1" />
-	
+
 	<action itemid="2554" script="survival/shovel.lua" />
 	<action itemid="5710" script="survival/shovel.lua" />
 	<action itemid="7731" script="tools/rope.lua" />
@@ -131,6 +130,7 @@
 	<action fromid="2031" toid="2034" script="other/fluids.lua" />
 	<action fromid="2574" toid="2577" script="other/fluids.lua" />
 	<action itemid="5553" script="other/fluids.lua" />
+	<action itemid="2562" script="other/fluids.lua" />
 
 	<!-- Potions -->
 	<action itemid="6558" script="other/potions.lua" />
@@ -142,6 +142,11 @@
 	<action fromid="8472" toid="8474" script="other/potions.lua" />
 	<action itemid="8704" script="other/potions.lua" />
 	<action fromid="26029" toid="26031" script="other/potions.lua" />
+
+	<action itemid="26444" script="other/potions.lua" />
+	<action itemid="26445" script="other/potions.lua" />
+	<action itemid="26446" script="other/potions.lua" />
+	<action itemid="26447" script="other/potions.lua" />
 
 	<!-- Other -->
 	<action itemid="430" script="other/teleport.lua" />
@@ -189,7 +194,7 @@
 	<action itemid="26387" script="survival/blueprint.lua" />
 
 	<action itemid="26390" script="survival/tools.lua" /> <!-- axe -->
-	<action itemid="26389" script="survival/tools.lua" /> <!-- pick -->
+	<action itemid="26389" script="survival/mining.lua" /> <!-- pick -->
 
 	<action itemid="26402" script="survival/blueprint_construction.lua" />
 	<action itemid="26403" script="survival/blueprint_construction_ready.lua" />
@@ -225,6 +230,18 @@
 	<action itemid="26426" script="survival/trap_open.lua" />
 
 	<action itemid="26427" script="survival/herb.lua" />
+	<action itemid="26430" script="survival/herb.lua" />
+	<action itemid="26432" script="survival/herb.lua" />
+	<action itemid="26434" script="survival/herb.lua" />
+	<action itemid="26436" script="survival/herb.lua" />
+	<action itemid="26438" script="survival/herb.lua" />
+	<action itemid="26440" script="survival/herb.lua" />
+	<action itemid="26442" script="survival/herb.lua" />
 	<action itemid="26429" script="survival/herb_unidentified.lua" />
 	
+	<action itemid="2580" script="survival/fishing.lua" allowfaruse="1" />
+
+	<action itemid="1427" script="survival/pot.lua" />
+	<action itemid="1428" script="survival/alchemy_pot.lua" />
+
 </actions>

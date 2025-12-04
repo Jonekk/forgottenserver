@@ -26,6 +26,10 @@ local fluidMessage = {
 local distillery = {[5513] = 5469, [5514] = 5470}
 
 function onUse(player, item, fromPosition, target, toPosition, isHotkey)
+	-- if pot with water used on fire 
+	print("potting:")
+	print(item.itemid, item.type, target.itemid)
+
 	local targetItemType = ItemType(target.itemid)
 	if targetItemType and targetItemType:isFluidContainer() then
 		if target.type == 0 and item.type ~= 0 then
@@ -37,6 +41,15 @@ function onUse(player, item, fromPosition, target, toPosition, isHotkey)
 			target:transform(target:getId(), 0)
 			return true
 		end
+	end
+
+	if item.itemid == 2562 and item.type == 1 and target.itemid == 1424 then
+		item:remove(1)
+		local duration = target:getDuration()
+		target:transform(1428)
+		target:setDuration(duration)
+		target:decay(1427)
+		return true
 	end
 
 	if target.itemid == 1 then

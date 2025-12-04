@@ -19,8 +19,8 @@ function onUse(player, item, fromPosition, target, toPosition, isHotkey)
 
     if bp_quality then productItem:setQuality(round(bp_quality)) end
     if bp_durability then 
-        productItem:setCustomAttribute("durability", round(bp_durability))
-        productItem:setCustomAttribute("durability_max", round(bp_durability))
+        productItem:setMaxDurability(round(bp_durability))
+        productItem:setDurability(round(bp_durability))
     end
 
     tile:constructItemEx(productItem)

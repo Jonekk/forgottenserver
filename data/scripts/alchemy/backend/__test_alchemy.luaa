@@ -1,0 +1,62 @@
+-- test_alchemy.lua
+-- How to wire modules: load engine, then load data modules that register into it.
+
+local A = require("alchemy")
+
+-- Load data packs (they immediately register into A)
+require("ingredients")(A)
+require("recipes")(A)
+
+print("=== TEST T1 ===")
+local t1 = A.Kettle.new()
+t1:stir("left")
+t1:boil("medium")
+local res = t1:end_brew()
+print(res.success, res.type, res.text)
+
+print("=== TEST T2 ===")
+local t2 = A.Kettle.new()
+t2:add_ingredient(A.createItem("mandrake", 100, 50))
+local res = t2:end_brew()
+print(res.success, res.type, res.text)
+
+-- === Example A: Vitality Elixir (pickled_mandrake + honey) ===
+local k = A.Kettle.new()
+k:add_ingredient(A.createItem("mandrake", 100, 50))
+k:add_ingredient(A.createItem("salt", 100, 50))
+k:add_ingredient(A.createItem("honey", 100, 50))
+k:stir("left")
+k:boil("medium")
+local res = k:end_brew()
+
+print("=== TEST A ===")
+print(res.success, res.type, res.text)
+
+-- === Example B: Mishap - Explosion (bat_wing + iron_shavings on high) ===
+local k2 = A.Kettle.new()
+k2:add_ingredient(A.createItem("bat_wing", 100, 50))
+k2:add_ingredient(A.createItem("iron_shavings", 100, 50))
+k2:boil("high")
+local res = k2:end_brew()
+
+print("=== TEST B ===")
+print(res.success, res.type, res.text)
+
+-- === Example C: Syrup of Sweet Steel (sweet_iron from honey + iron_shavings on medium) ===
+local k3 = A.Kettle.new()
+k3:add_ingredient(A.createItem("honey", 100, 50))
+k3:add_ingredient(A.createItem("iron_shavings", 100, 50))
+k3:boil("medium")
+k3:stir("right")
+local res = k3:end_brew()
+
+print("=== TEST C ===")
+print(res.success, res.type, res.text)
+
+-- === Optional: dump state util
+local function dump_state(kettle)
+  print("Actions:", #kettle.steps)
+  for i, it in ipairs(kettle.items) do
+    print(i, it.name, "Q:", it.quality, "P:", it.purity)
+  end
+end

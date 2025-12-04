@@ -281,10 +281,10 @@ void mainLoader(int, char*[], ServiceManager* services)
 		return;
 	}
 
-	std::cout << ">> Loading creation items";
-	timer.start();
-	int loaded_items = g_game.loadCreationItems();
-	std::cout << fmt::format("(count: {}) - [{}ms]", loaded_items, timer.stop()) << std::endl;
+	//std::cout << ">> Loading creation items";
+	//timer.start();
+	//int loaded_items = g_game.loadCreationItems();
+	//std::cout << fmt::format("(count: {}) - [{}ms]", loaded_items, timer.stop()) << std::endl;
 
 	std::cout << ">> Loading random spawner config" << std::endl;
 	g_randomItemSpawner.loadFromXml("data/world/randomspawns.xml");

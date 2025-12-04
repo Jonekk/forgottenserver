@@ -60,6 +60,8 @@ enum ItemParseAttributes_t {
 	ITEM_PARSE_FLOORCHANGE,
 	ITEM_PARSE_CORPSETYPE,
 	ITEM_PARSE_CONTAINERSIZE,
+	ITEM_PARSE_CONTAINERTYPE,
+	ITEM_PARSE_ITEMCONTAINERTYPE,
 	ITEM_PARSE_FLUIDSOURCE,
 	ITEM_PARSE_READABLE,
 	ITEM_PARSE_WRITEABLE,
@@ -153,6 +155,11 @@ enum ItemParseAttributes_t {
 	ITEM_PARSE_BLOCKING,
 	ITEM_PARSE_ALLOWDISTREAD,
 	ITEM_PARSE_STOREITEM,
+};
+
+enum ContainerType_t {
+	CONTAINER_TYPE_ALL,
+	CONTAINER_TYPE_HERBS,
 };
 
 struct Abilities {
@@ -336,6 +343,8 @@ class ItemType
 		ShootType_t shootType = CONST_ANI_NONE;
 		RaceType_t corpseType = RACE_NONE;
 		FluidTypes_t fluidSource = FLUID_NONE;
+		ContainerType_t containerType = CONTAINER_TYPE_ALL;
+		ContainerType_t itemContainerType = CONTAINER_TYPE_ALL;
 
 		uint8_t floorChange = 0;
 		uint8_t alwaysOnTopOrder = 0;

@@ -770,17 +770,8 @@ std::string getSpecialSkillName(uint8_t skillid)
 std::string getSkillName(uint8_t skillid)
 {
 	switch (skillid) {
-		case SKILL_FIST:
-			return "fist fighting";
-
-		case SKILL_CLUB:
-			return "club fighting";
-
-		case SKILL_SWORD:
-			return "sword fighting";
-
-		case SKILL_AXE:
-			return "axe fighting";
+		case SKILL_MELEE:
+			return "melee fighting";
 
 		case SKILL_DISTANCE:
 			return "distance fighting";
@@ -1073,6 +1064,8 @@ const char* getReturnMessage(ReturnValue value)
 
 		case RETURNVALUE_CONTAINERNOTENOUGHROOM:
 			return "You cannot put more objects in this container.";
+		case RETURNVALUE_CONTAINERTYPEMISMATCH:
+			return "You cannot put this item into this container.";
 
 		case RETURNVALUE_NEEDEXCHANGE:
 		case RETURNVALUE_NOTENOUGHROOM:

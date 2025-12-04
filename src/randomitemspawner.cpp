@@ -4,6 +4,7 @@
 #include "game.h"
 #include "gauss.hpp"
 #include "map.h"
+#include "monster.h"
 #include "tile.h"
 #include "item.h"
 #include "tools.h"
@@ -132,6 +133,20 @@ static void loadSpawnNode(const pugi::xml_node& node, RISSpawnCfg& out) {
     }
 }
 
+static void loadMonsterSpawnNode(const pugi::xml_node& node, RISMonsterSpawnCfg& out) {
+    out.name = node.attribute("name").as_string("");
+    if (out.name.empty()) {
+        return;
+    }
+    const std::string chance = node.attribute("chance").as_string("");
+    if (!chance.empty()) {
+        out.chancePct = static_cast<uint8_t>(std::clamp<int>(atoi(chance.c_str()), 0, 100));
+    }
+    if (auto tod = node.attribute("timeOfDay")) {
+        out.timeMask = parseTimeMaskCSV(tod.as_string());
+    }
+}
+
 // --------------------------- Class methods -----------------------------------
 
 bool RandomItemSpawner::loadFromXml(const std::string& path) {
@@ -165,9 +180,11 @@ bool RandomItemSpawner::loadFromXml(const std::string& path) {
         ar.cfg.radius   = static_cast<uint16_t>(area.attribute("radius").as_uint(1));
         ar.cfg.spawnChancePerCheck = area.attribute("spawnChancePerCheck").as_double(0.10);
         ar.cfg.attemptsPerCheck    = area.attribute("attemptsPerCheck").as_uint(1);
-        ar.cfg.maxActive           = area.attribute("maxActive").as_uint(10);
+        ar.cfg.maxItemsActive           = area.attribute("maxItemsActive").as_uint(10);
+        ar.cfg.maxMonstersActive           = area.attribute("maxMonstersActive").as_uint(10);
         ar.cfg.timeMask            = parseTimeMaskCSV(area.attribute("timeOfDay").as_string(""));
 
+        std::cout << center << " " << ar.cfg.maxItemsActive << "/" << ar.cfg.maxMonstersActive << std::endl;
         if (auto at = area.child("allowedTiles")) {
             for (auto t : at.children("tile")) {
                 const uint16_t id = static_cast<uint16_t>(t.attribute("id").as_uint());
@@ -192,11 +209,20 @@ bool RandomItemSpawner::loadFromXml(const std::string& path) {
         }
 
         if (auto spawnsNode = area.child("spawns")) {
-            for (auto s : spawnsNode.children("spawn")) {
+            for (auto s : spawnsNode.children("item")) {
                 RISSpawnCfg cfg; loadSpawnNode(s, cfg);
                 if (cfg.itemId != 0) {
                     if (cfg.timeMask == 0) cfg.timeMask = ar.cfg.timeMask; // inherit
                     ar.cfg.spawns.emplace_back(std::move(cfg));
+                    std::cout << "item: " << cfg.itemId << std::endl;
+                }
+            }
+            for (auto s : spawnsNode.children("monster")) {
+                RISMonsterSpawnCfg cfg; loadMonsterSpawnNode(s, cfg);
+                if (cfg.name != "") {
+                    if (cfg.timeMask == 0) cfg.timeMask = ar.cfg.timeMask; // inherit
+                    std::cout << "monster: " << cfg.name << std::endl;
+                    ar.cfg.monsterSpawns.emplace_back(std::move(cfg));
                 }
             }
         }
@@ -205,7 +231,7 @@ bool RandomItemSpawner::loadFromXml(const std::string& path) {
     }
 
     // Optional initial resync
-    resyncCountsOccasionally();
+    //resyncCountsOccasionally();
     return true;
 }
 
@@ -233,19 +259,32 @@ void RandomItemSpawner::scheduleTick() {
 
 void RandomItemSpawner::runOnce() {
     for (auto& ar : areas_) {
-        if (ar.cfg.maxActive > 0 && ar.active >= ar.cfg.maxActive) continue;
+        if ( ar.activeItems >= ar.cfg.maxItemsActive) continue;
         const int roll = urand(1, 100);
         if (roll > static_cast<int>(ar.cfg.spawnChancePerCheck * 100.0)) continue;
 
         const uint32_t attempts = std::max<uint32_t>(1, ar.cfg.attemptsPerCheck);
         for (uint32_t i = 0; i < attempts; ++i) {
             if (trySpawnInArea(ar)) {
-                if (ar.cfg.maxActive > 0 && ar.active >= ar.cfg.maxActive) break;
+                if ( ar.activeItems >= ar.cfg.maxItemsActive) break;
             }
         }
     }
 
-    if (urand(1, 20) == 1) resyncCountsOccasionally();
+    for (auto& ar : areas_) {
+        if (ar.activeMonsters >= ar.cfg.maxMonstersActive) continue;
+        const int roll = urand(1, 100);
+        if (roll > static_cast<int>(ar.cfg.spawnChancePerCheck * 100.0)) continue;
+
+        const uint32_t attempts = std::max<uint32_t>(1, ar.cfg.attemptsPerCheck);
+        for (uint32_t i = 0; i < attempts; ++i) {
+            if (trySpawnMonsterInArea(ar)) {
+                if (ar.activeMonsters >= ar.cfg.maxMonstersActive) break;
+            }
+        }
+    }
+
+    //if (urand(1, 20) == 1) resyncCountsOccasionally();
 }
 
 uint16_t RandomItemSpawner::pickRandomItemId(const AreaRuntime& ar) const {
@@ -348,7 +387,60 @@ bool RandomItemSpawner::trySpawnInArea(AreaRuntime& ar) {
 
         
         maybeStartDecay(tile, item, chosen);
-        ++ar.active;
+        ++ar.activeItems;
+        return true;
+    }
+
+    return false;
+}
+
+bool RandomItemSpawner::trySpawnMonsterInArea(AreaRuntime& ar) {
+    RISMonsterSpawnCfg chosen{};
+    bool haveExplicit = false;
+
+    if (!ar.cfg.monsterSpawns.empty()) {
+        std::vector<size_t> candidates;
+        candidates.reserve(ar.cfg.monsterSpawns.size());
+        for (size_t i = 0; i < ar.cfg.monsterSpawns.size(); ++i) {
+            const auto& s = ar.cfg.monsterSpawns[i];
+            if (!isAllowedNow(s.timeMask)) continue;
+            if (urand(1, 100) > s.chancePct) continue;
+            candidates.push_back(i);
+        }
+        if (!candidates.empty()) {
+            const size_t pick = static_cast<size_t>(urand(0, static_cast<int32_t>(candidates.size()-1)));
+            chosen = ar.cfg.monsterSpawns[candidates[pick]];
+            haveExplicit = true;
+        } else {
+            return false; // none eligible right now
+        }
+    }
+
+    // Find a valid tile
+    int16_t dx = 0, dy = 0; Tile* tile = nullptr; Position pos{};
+    for (uint32_t tries = 0; tries < kMaxTileAttemptsPerTry; ++tries) {
+        pickRandomOffset(static_cast<int16_t>(ar.cfg.radius), dx, dy);
+        const Position center = ar.cfg.centerPtr ? *ar.cfg.centerPtr : ar.cfg.centerFallback;
+        pos = Position{ static_cast<uint16_t>(center.x + dx), static_cast<uint16_t>(center.y + dy), center.z };
+        if (!tileAllowed(ar, pos)) continue;
+        tile = g_game.map.getTile(pos);
+        if (!tile) continue;
+
+        Monster* monster = Monster::createMonster(chosen.name);
+        if (!monster) {
+            return false;
+        }
+
+        std::string token_val = ar.cfg.id;
+        monster->setRISToken(token_val);
+
+        if (!g_game.placeCreature(monster, pos, false, true)) {
+            delete monster; // not added anywhere -> safe delete
+            return false;
+        }
+
+        
+        ++ar.activeMonsters;
         return true;
     }
 
@@ -459,13 +551,27 @@ void RandomItemSpawner::onItemRemoved(Item* item) {
     const size_t idx = findAreaForItem(item);
     if (idx < areas_.size()) {
         auto& ar = areas_[idx];
-        if (ar.active > 0) --ar.active;
+        if (ar.activeItems > 0) --ar.activeItems;
     }
     std::cout <<"removing spawned item" <<std::endl;
     item->removeCustomAttribute("ris:token");
     item->setDecaying(DECAYING_FALSE);
     item->removeAttribute(ITEM_ATTRIBUTE_DECAYSTATE);
 	item->removeAttribute(ITEM_ATTRIBUTE_DURATION);
+}
+
+void RandomItemSpawner::onCreatureRemoved(const Creature* creature)
+{
+    const Monster* monster = creature ? creature->getMonster() : nullptr;
+    if (!monster) return; // only care about monsters
+
+    std::string risToken = monster->getRISToken();
+    for (auto& ar : areas_) {
+        if (risToken == ar.cfg.id) {
+            if (ar.activeMonsters > 0) --ar.activeMonsters;
+            break;
+        }
+    }
 }
 
 size_t RandomItemSpawner::findAreaForItem(const Item *it) const {
@@ -479,7 +585,10 @@ size_t RandomItemSpawner::findAreaForItem(const Item *it) const {
 }
 
 void RandomItemSpawner::resyncCountsOccasionally() {
-    for (auto& ar : areas_) ar.active = 0;
+    for (auto& ar : areas_) {
+        ar.activeItems = 0;
+        ar.activeMonsters = 0;
+    }
     for (const auto& ar : areas_) {
         const auto& cfg = ar.cfg;
         const Position center = cfg.centerPtr ? *cfg.centerPtr : cfg.centerFallback;
@@ -497,7 +606,7 @@ void RandomItemSpawner::resyncCountsOccasionally() {
                     if (!it) continue;
                     if (!isRISItem(it)) continue;
                     const size_t owner = findAreaForItem(it);
-                    if (owner < areas_.size()) ++const_cast<AreaRuntime&>(areas_[owner]).active;
+                    if (owner < areas_.size()) ++const_cast<AreaRuntime&>(areas_[owner]).activeItems;
                 }
             }
         }

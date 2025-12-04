@@ -4,10 +4,7 @@ combat:setParameter(COMBAT_PARAM_EFFECT, CONST_ME_POFF)
 
 local parameters = {
 	{key = CONDITION_PARAM_TICKS, value = 5 * 1000},
-	{key = CONDITION_PARAM_SKILL_FIST, value = nil},
-	{key = CONDITION_PARAM_SKILL_CLUB, value = nil},
-	{key = CONDITION_PARAM_SKILL_SWORD, value = nil},
-	{key = CONDITION_PARAM_SKILL_AXE, value = nil},
+	{key = CONDITION_PARAM_SKILL_MELEE, value = nil},
 	{key = CONDITION_PARAM_SKILL_DISTANCE, value = nil},
 	{key = CONDITION_PARAM_SKILL_SHIELD, value = nil}
 }

@@ -166,6 +166,14 @@ class Monster final : public Creature
 		BlockType_t blockHit(Creature* attacker, CombatType_t combatType, int32_t& damage,
 		                     bool checkDefense = false, bool checkArmor = false, bool field = false, bool ignoreResistances = false) override;
 
+		std::string getRISToken() const {
+			return risToken;
+		}
+					
+		void setRISToken(std::string newToken) {
+			risToken = newToken;
+		}
+					
 		static uint32_t monsterAutoID;
 
 	private:
@@ -192,6 +200,8 @@ class Monster final : public Creature
 		int32_t stepDuration = 0;
 
 		Position masterPos;
+
+		std::string risToken;
 
 		bool ignoreFieldDamage = false;
 		bool isIdle = true;

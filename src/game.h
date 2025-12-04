@@ -75,7 +75,7 @@ class Game
 
 		bool loadMainMap(const std::string& filename);
 		void loadMap(const std::string& path);
-		int loadCreationItems();
+		//int loadCreationItems();
 
 		/**
 		  * Get the map size - info purpose only

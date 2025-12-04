@@ -78,7 +78,18 @@ class Container : public Item, public Cylinder
 			return itemlist.empty();
 		}
 		uint32_t capacity() const {
+			std::string key = "maxsize";
+			const ItemAttributes::CustomAttribute* maxsizeAttr = getCustomAttribute(key);
+			if (maxsizeAttr) {
+				int64_t attrMaxSize = boost::get<int64_t>(maxsizeAttr->value);
+				return attrMaxSize;
+			}
+			// no attribute set, return normal value
 			return maxSize;
+		}
+		void setCapacity(uint32_t capacity) {
+			std::string key = "maxsize";
+			setCustomAttribute<int64_t>(key, capacity);
 		}
 
 		ContainerIterator iterator() const;
@@ -156,6 +167,7 @@ class Container : public Item, public Cylinder
 		uint32_t maxSize;
 		uint32_t totalWeight = 0;
 		uint32_t serializationCount = 0;
+		ContainerType_t containerType = CONTAINER_TYPE_ALL;
 
 		bool unlocked;
 		bool pagination;

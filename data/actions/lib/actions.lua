@@ -277,7 +277,7 @@ function onUseDestroy(player, item, fromPosition, target, toPosition, isHotkey)
 		if tileItem and tileItem:isCreationItem() then
 			toPosition:sendMagicEffect(CONST_ME_POFF)
 			local damage = gaussianRandom20p(item:getAttack() * 10)
-			tileItem:damageItem(damage)
+			tileItem:addDurability(-damage)
 			return true
 		end
 	end

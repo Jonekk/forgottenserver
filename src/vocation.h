@@ -89,11 +89,10 @@ class Vocation
 		std::string name = "none";
 		std::string description;
 
+		// watch out - formula is: 
+		// tries_req = base * multiplier^level
 		double skillMultipliers[SKILL_LAST + 1] = {
-			1.35, // SKILL_FIST
-			1.35, // SKILL_CLUB
-			1.35, // SKILL_SWORD
-			1.35, // SKILL_AXE
+			1.35, // SKILL_MELEE
 			1.35, // SKILL_DISTANCE
 			1.35, // SKILL_SHIELD
 			1.35, // SKILL_FISHING

@@ -222,6 +222,7 @@ end
 do
 	local function WeaponNewIndex(self, key, value)
 		if key == "onUseWeapon" then
+			print(self, key, value)
 			self:onUseWeapon(value)
 			return
 		end
@@ -1451,10 +1452,8 @@ end
 
 do
 	local skills = {
-		[SKILL_FIST] = 'fist fighting',
-		[SKILL_CLUB] = 'club fighting',
-		[SKILL_SWORD] = 'sword fighting',
-		[SKILL_AXE] = 'axe fighting',
+		-- cannot assign to index 0 in lua xD
+		-- [SKILL_MELEE] = 'melee fighting',
 		[SKILL_DISTANCE] = 'distance fighting',
 		[SKILL_SHIELD] = 'shielding',
 		[SKILL_FISHING] = 'fishing',
@@ -1470,6 +1469,9 @@ do
 	}
 
 	function getSkillName(skill)
+		if skill == SKILL_MELEE then
+			return 'melee fighting'
+		end
 		return skills[skill] or 'unknown'
 	end
 end

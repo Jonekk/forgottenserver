@@ -15,7 +15,80 @@ bullseye:setParameter(CONDITION_PARAM_SKILL_DISTANCE, 5)
 bullseye:setParameter(CONDITION_PARAM_SKILL_SHIELD, -10)
 bullseye:setParameter(CONDITION_PARAM_BUFF_SPELL, true)
 
+local function healingHandler(player, target, item)
+	local quality = item:getQuality()
+	local min = (3/2 * quality) / 100 * 10
+	local max = (2   * quality) / 100 * 20
+	doTargetCombat(player, target, COMBAT_HEALING, math.max(1, min), math.max(1, max))
+	return true
+end
+
+local function staminaHandler(player, target, item)
+	local quality = item:getQuality()
+	local avg_stamina_gain = (3/2 * quality) / 100 * 20
+	player:changeStamina(math.max(1, round(gaussianRandom50p(avg_stamina_gain))))
+	return true
+end
+
+local function venomsapHandler(player, target, item)
+	local quality = item:getQuality()
+	local min = (3/2 * quality) / 100 * 8
+	local max = (2   * quality) / 100 * 15
+
+	if target:isPlayer() then
+		if player == target then
+			print("using potion on self")
+		else
+			print("using potion on someone else")
+			min = min / 4
+			max = max / 4
+		end
+
+		local poison = Condition(CONDITION_POISON)
+		poison:setParameter(CONDITION_PARAM_DELAYED, true)
+		poison:setParameter(CONDITION_PARAM_MINVALUE, -min)
+		poison:setParameter(CONDITION_PARAM_MAXVALUE, -max)
+		poison:setParameter(CONDITION_PARAM_STARTVALUE, -randomBetween(3,5))
+		poison:setParameter(CONDITION_PARAM_TICKINTERVAL, 5000 / (quality / 100))
+		poison:setParameter(CONDITION_PARAM_FORCEUPDATE, true)
+
+		target:addCondition(poison)
+	elseif target:isItem() then
+		if target:getId() == 23839 then
+			target:transform(26448)
+			target:setQuality(item:getQuality())
+		end
+	end
+	return true
+end
+
+local function gorgonsTearsHandler(player, target, item)
+	local quality = item:getQuality()
+
+	if target:isPlayer() then
+		if player == target then
+			print("using potion on self")
+		else
+			print("using potion on someone else")
+		end
+
+		local condition = Condition(CONDITION_PARALYZE)
+		condition:setParameter(CONDITION_PARAM_TICKS, 8000)
+		condition:setFormula(-1, 80, -1, 80)
+		Creature(variant:getNumber()):addCondition(condition)
+
+		target:addCondition(condition)
+	elseif target:isItem() then
+		if target:getId() == 23839 then
+			target:transform(26449)
+			target:setQuality(item:getQuality())
+		end
+	end
+	return true
+end
+
 local potions = {
+	--[[
 	[6558] = { -- concentrated demonic blood
 		transform = {7588, 7589},
 		effect = CONST_ME_DRAWBLOOD
@@ -122,8 +195,34 @@ local potions = {
 		flask = 7635,
 		description = "Only knights of level 200 or above may drink this fluid."
 	}
+--]]
+	[26444] = {handler=healingHandler},
+	[26445] = {handler=staminaHandler},
+	[26446] = {handler=venomsapHandler},
+	[26447] = {handler=gorgonsTearsHandler},
 }
 
+function onUse(player, item, fromPosition, target, toPosition, isHotkey)
+	--if type(target) == "userdata" and not target:isPlayer() then
+	--	return false
+	--end
+
+	local potion = potions[item:getId()]
+
+	local ret = potion.handler(player, target, item)
+	if not ret then
+		return false
+	end
+	if target:isPlayer() then
+		target:say("Aaaah...", TALKTYPE_MONSTER_SAY)
+		target:getPosition():sendMagicEffect(CONST_ME_MAGIC_BLUE)
+	end
+
+	item:remove(1)
+	return true
+end
+
+--[[
 function onUse(player, item, fromPosition, target, toPosition, isHotkey)
 	if type(target) == "userdata" and not target:isPlayer() then
 		return false
@@ -176,3 +275,4 @@ function onUse(player, item, fromPosition, target, toPosition, isHotkey)
 	item:remove(1)
 	return true
 end
+--]]

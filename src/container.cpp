@@ -15,6 +15,7 @@ Container::Container(uint16_t type) :
 Container::Container(uint16_t type, uint16_t size, bool unlocked /*= true*/, bool pagination /*= false*/) :
 	Item(type),
 	maxSize(size),
+	containerType(items[type].containerType),
 	unlocked(unlocked),
 	pagination(pagination)
 {}
@@ -277,6 +278,10 @@ ReturnValue Container::queryAdd(int32_t index, const Thing& thing, uint32_t coun
 		return RETURNVALUE_THISISIMPOSSIBLE;
 	}
 
+	if (containerType != CONTAINER_TYPE_ALL && items[item->getID()].itemContainerType != containerType) {
+		return RETURNVALUE_CONTAINERTYPEMISMATCH;
+	}
+	
 	// store items can be only moved into depot chest or store inbox
 	if (item->isStoreItem() && !dynamic_cast<const DepotChest*>(this)) {
 		return RETURNVALUE_ITEMCANNOTBEMOVEDTHERE;
@@ -504,6 +509,10 @@ void Container::addThing(int32_t index, Thing* thing)
 
 	Item* item = thing->getItem();
 	if (item == nullptr) {
+		return /*RETURNVALUE_NOTPOSSIBLE*/;
+	}
+
+	if (containerType != CONTAINER_TYPE_ALL && items[item->getID()].itemContainerType != containerType) {
 		return /*RETURNVALUE_NOTPOSSIBLE*/;
 	}
 

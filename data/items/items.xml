@@ -559,7 +559,9 @@
 		<attribute key="showduration" value="1" />
 	</item>
 	<item fromid="1426" toid="1427" article="an" name="unlit campfire" />
-	<item id="1428" article="a" name="campfire" />
+	<item id="1428" article="a" name="campfire" >
+		<attribute key="showduration" value="1" />
+	</item>
 	<item fromid="1429" toid="1434" article="a" name="sign">
 		<attribute key="allowDistRead" value="true" />
 	</item>
@@ -1621,6 +1623,7 @@
 	<item id="1989" article="a" name="basket">
 		<attribute key="weight" value="950" />
 		<attribute key="containerSize" value="5" />
+		<attribute key="containerType" value="herb" />
 	</item>
 	<item id="1990" article="a" name="present">
 		<attribute key="weight" value="600" />
@@ -1849,34 +1852,40 @@
 		<attribute key="slotType" value="ammo" />
 		<attribute key="weight" value="500" />
 		<attribute key="stopduration" value="1" />
+		<attribute key="showduration" value="1" />
 	</item>
 	<item id="2051" article="a" name="lit torch">
 		<attribute key="slotType" value="ammo" />
 		<attribute key="weight" value="500" />
-		<attribute key="decayTo" value="2053" />
+		<attribute key="decayTo" value="2056" />
 		<attribute key="duration" value="600" />
+		<attribute key="showduration" value="1" />
 	</item>
 	<item id="2052" article="a" name="torch">
 		<attribute key="slotType" value="ammo" />
 		<attribute key="weight" value="450" />
 		<attribute key="stopduration" value="1" />
+		<attribute key="showduration" value="1" />
 	</item>
 	<item id="2053" article="a" name="lit torch">
 		<attribute key="slotType" value="ammo" />
 		<attribute key="weight" value="450" />
 		<attribute key="decayTo" value="2055" />
 		<attribute key="duration" value="300" />
+		<attribute key="showduration" value="1" />
 	</item>
 	<item id="2054" article="a" name="torch">
 		<attribute key="slotType" value="ammo" />
 		<attribute key="weight" value="400" />
 		<attribute key="stopduration" value="1" />
+		<attribute key="showduration" value="1" />
 	</item>
 	<item id="2055" article="a" name="lit torch">
 		<attribute key="slotType" value="ammo" />
 		<attribute key="weight" value="400" />
 		<attribute key="decayTo" value="2056" />
 		<attribute key="duration" value="300" />
+		<attribute key="showduration" value="1" />
 	</item>
 	<item id="2056" article="a" name="burnt down torch">
 		<attribute key="slotType" value="ammo" />
@@ -37489,20 +37498,81 @@
 	<!-- <item id="26394" article="a" name="shardvein" /> -->
 
 	<item id="26427" article="a" name="starveil" />
-	<item id="26428" article="a" name="starveil leaf" />
+	<item id="26428" article="a" name="starveil leaf" >
+		<attribute key="itemContainerType" value="herb" />
+	</item>
 	<item id="26429" article="a" name="unknown herb" />
 	<item id="26430" article="a" name="lifevine" />
-	<item id="26431" article="a" name="lifevine leaf" />
+	<item id="26431" article="a" name="lifevine leaf" >
+		<attribute key="itemContainerType" value="herb" />
+	</item>
 	<item id="26432" article="a" name="greenlance" />
-	<item id="26433" article="a" name="greenlance leaf" />
+	<item id="26433" article="a" name="greenlance leaf" >
+		<attribute key="itemContainerType" value="herb" />
+	</item>
 	<item id="26434" article="a" name="duskmoss" />
-	<item id="26435" article="a" name="duskmoss string" />
+	<item id="26435" article="a" name="duskmoss string" >
+		<attribute key="itemContainerType" value="herb" />
+	</item>
 	<item id="26436" article="a" name="mirelace" />
-	<item id="26437" article="a" name="mirelace core" />
+	<item id="26437" article="a" name="mirelace core" >
+		<attribute key="itemContainerType" value="herb" />
+	</item>
 	<item id="26438" article="a" name="embderbud" />
-	<item id="26439" article="a" name="emberbud pod" />
+	<item id="26439" article="a" name="emberbud pod" >
+		<attribute key="itemContainerType" value="herb" />
+	</item>
 	<item id="26440" article="a" name="heartbloom" />
-	<item id="26441" article="a" name="heartbloom seed" />
+	<item id="26441" article="a" name="heartbloom seed" >
+		<attribute key="itemContainerType" value="herb" />
+	</item>
 	<item id="26442" article="a" name="swamptorch" />
-	<item id="26443" article="a" name="swamptorch root" />
+	<item id="26443" article="a" name="swamptorch root" >
+		<attribute key="itemContainerType" value="herb" />
+	</item>
+	<item id="26444" article="a" name="vitality potion">
+		<attribute key="weight" value="270" />
+	</item>
+	<item id="26445" article="a" name="stamina potion">
+		<attribute key="weight" value="270" />
+	</item>
+	<item id="26446" article="a" name="venomsap">
+		<attribute key="weight" value="270" />
+	</item>
+	<item id="26447" article="a" name="gorgon's tears">
+		<attribute key="weight" value="270" />
+	</item>
+
+	<item id="26448" article="a" name="venomsap arrow">
+		<attribute key="weight" value="80" />
+		<attribute key="slotType" value="ammo" />
+		<attribute key="attack" value="15" />
+		<attribute key="weaponType" value="ammunition" />
+		<attribute key="ammoType" value="arrow" />
+		<attribute key="shootType" value="poisonarrow" />
+		<attribute key="maxHitChance" value="91" />
+	</item>
+	<item id="26449" article="a" name="gorgon's arrow">
+		<attribute key="weight" value="90" />
+		<attribute key="slotType" value="ammo" />
+		<attribute key="attack" value="15" />
+		<attribute key="weaponType" value="ammunition" />
+		<attribute key="ammoType" value="arrow" />
+		<attribute key="shootType" value="burstarrow" />
+		<attribute key="maxHitChance" value="100" />
+	</item>
+	<item id="26450" article="a" name="tentacle"> 		<attribute key="weight" value="400" /> </item>
+	<item id="26451" article="a" name="salmon"> 		<attribute key="weight" value="700" /> </item>
+	<item id="26452" article="a" name="roach"> 			<attribute key="weight" value="600" /> </item>
+	<item id="26453" article="a" name="pike"> 			<attribute key="weight" value="600" /> </item>
+	<item id="26454" article="a" name="mackerel"> 		<attribute key="weight" value="500" /> </item>
+	<item id="26455" article="a" name="herring"> 		<attribute key="weight" value="250" /> </item>
+	<item id="26456" article="a" name="bass"> 			<attribute key="weight" value="400" /> </item>
+	<item id="26457" article="a" name="eel"> 			<attribute key="weight" value="700" /> </item>
+	<item id="26458" article="a" name="cod"> 			<attribute key="weight" value="500" /> </item>
+	<item id="26459" article="a" name="open clam"> 		<attribute key="weight" value="100" /> </item>
+	<item id="26460" article="a" name="closed clam"> 	<attribute key="weight" value="150" /> </item>
+	<item id="26461" article="a" name="carp"> 			<attribute key="weight" value="300" /> </item>
+	<item id="26462" article="a" name="flounder"> 		<attribute key="weight" value="200" /> </item>
+	<item id="26463" article="a" name="zander"> 		<attribute key="weight" value="500" /> </item>
 </items>

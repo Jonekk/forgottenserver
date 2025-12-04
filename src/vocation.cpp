@@ -137,10 +137,7 @@ uint16_t Vocations::getPromotedVocation(uint16_t id) const
 }
 
 static const uint32_t skillBase[SKILL_LAST + 1] = {
-	100, // SKILL_FIST
-	100, // SKILL_CLUB
-	100, // SKILL_SWORD
-	100, // SKILL_AXE
+	100, // SKILL_MELEE
 	100, // SKILL_DISTANCE
 	100, // SKILL_SHIELD
 	100, // SKILL_FISHING

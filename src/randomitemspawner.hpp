@@ -6,6 +6,7 @@
 #include <optional>
 #include <unordered_set>
 
+#include "creature.h"
 #include "position.h"
 
 // Forward declarations to avoid heavy includes in header
@@ -40,6 +41,13 @@ struct RISSpawnCfg {
     std::vector<RISCustomAttr> attrs;
 };
 
+struct RISMonsterSpawnCfg {
+    std::string name = "";
+    uint8_t  chancePct = 100;      // 0..100
+    RISTimeMask timeMask = 0;      // 0==any time; else bitmask of RISTime
+};
+
+
 struct SpawnItemDef {
     uint16_t itemId = 0;
     uint32_t weight = 0;
@@ -53,11 +61,13 @@ struct AreaCfg {
 
     double   spawnChancePerCheck = 0.10; // probability per tick
     uint32_t attemptsPerCheck    = 1;    // how many tries per tick
-    uint32_t maxActive           = 10;   // cap of active spawned items in area
+    uint32_t maxItemsActive      = 1;   // cap of active spawned items in area
+    uint32_t maxMonstersActive   = 1;   // cap of active spawned monsters in area
 
     std::vector<uint16_t> allowedGroundIds; // optional allowed ground IDs
     std::vector<SpawnItemDef> items;        // weighted pool (optional)
     std::vector<RISSpawnCfg>  spawns;       // explicit spawns (optional)
+    std::vector<RISMonsterSpawnCfg> monsterSpawns;
 
     RISTimeMask timeMask = 0;               // default time-of-day for this area
 };
@@ -66,7 +76,8 @@ struct AreaRuntime {
     AreaCfg cfg;
     std::unordered_set<uint16_t> allowedSet;
     std::vector<uint32_t> itemPrefix; // prefix sums for weighted pick
-    uint32_t active = 0;              // active spawned items
+    uint32_t activeItems = 0;              // active spawned items
+    uint32_t activeMonsters = 0;              // active spawned monsters
 };
 
 class RandomItemSpawner {
@@ -85,6 +96,7 @@ public:
 
     // Must be called by the game core when an Item is removed from the map
     void onItemRemoved(Item* item);
+    void onCreatureRemoved(const Creature* creature);
 
     // Utility: whether an item belongs to this spawner (has our token)
     static bool isRISItem(const Item* item);
@@ -93,6 +105,7 @@ private:
     bool tileAllowed(const AreaRuntime& ar, const Position& pos) const;
     uint16_t pickRandomItemId(const AreaRuntime& ar) const;
     bool trySpawnInArea(AreaRuntime& ar);
+    bool trySpawnMonsterInArea(AreaRuntime& ar);
     void scheduleTick();
     void resyncCountsOccasionally();
     size_t findAreaForItem(const Item *it) const;

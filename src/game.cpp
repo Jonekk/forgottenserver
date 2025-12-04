@@ -49,9 +49,7 @@ Game::Game()
 {
 	offlineTrainingWindow.defaultEnterButton = 1;
 	offlineTrainingWindow.defaultEscapeButton = 0;
-	offlineTrainingWindow.choices.emplace_back("Sword Fighting and Shielding", SKILL_SWORD);
-	offlineTrainingWindow.choices.emplace_back("Axe Fighting and Shielding", SKILL_AXE);
-	offlineTrainingWindow.choices.emplace_back("Club Fighting and Shielding", SKILL_CLUB);
+	offlineTrainingWindow.choices.emplace_back("Melee Fighting and Shielding", SKILL_MELEE);
 	offlineTrainingWindow.choices.emplace_back("Distance Fighting and Shielding", SKILL_DISTANCE);
 	offlineTrainingWindow.choices.emplace_back("Magic Level and Shielding", SKILL_MAGLEVEL);
 	offlineTrainingWindow.buttons.emplace_back("Okay", offlineTrainingWindow.defaultEnterButton);
@@ -612,6 +610,8 @@ bool Game::removeCreature(Creature* creature, bool isLogout/* = true*/)
 	}
 
 	tile->removeCreature(creature);
+
+	g_randomItemSpawner.onCreatureRemoved(creature);
 
 	const Position& tilePosition = tile->getPosition();
 
@@ -1310,7 +1310,7 @@ ReturnValue Game::internalAddItem(Cylinder* toCylinder, Item* item, int32_t inde
 	uint32_t remainderCount = 0;
 	return internalAddItem(toCylinder, item, index, flags, test, remainderCount);
 }
-
+/*
 int Game::loadCreationItems()
 {
 	int items_count = 0;
@@ -1344,7 +1344,7 @@ int Game::loadCreationItems()
 	}
 	return items_count;
 }
-
+*/
 bool Game::internalAddConstructionItemToDb(Item *item)
 {
 	Database& db = Database::getInstance();
@@ -1461,7 +1461,7 @@ ReturnValue Game::constructItem(Tile* tile, Item* item, int32_t index /*= INDEX_
 		return RETURNVALUE_NOTPOSSIBLE;
 	}
 	
-	internalAddConstructionItemToDb(item);
+	map.addConstructionItem(item);
 
 	return RETURNVALUE_NOERROR;
 }
@@ -1636,7 +1636,7 @@ ReturnValue Game::internalRemoveItem(Item* item, int32_t count /*= -1*/, bool te
 
 	if (item->isCreationItem()) {
 		std::cout << "Removing item from db..." << item->getID();
-		internalRemoveConstructionItemFromDb(item);
+		map.removeConstructionItem(item);
 	}
 
 	g_randomItemSpawner.onItemRemoved(item);
@@ -1975,6 +1975,7 @@ Item* Game::transformItem(Item* item, uint16_t newId, int32_t newCount /*= -1*/)
 	if (newItem == nullptr) {
 		return nullptr;
 	}
+
 	newItem->moveCreationDataFrom(item);
 	cylinder->replaceThing(itemIndex, newItem);
 	cylinder->postAddNotification(newItem, cylinder, itemIndex);
@@ -1991,6 +1992,7 @@ Item* Game::transformItem(Item* item, uint16_t newId, int32_t newCount /*= -1*/)
 		}
 	}
 
+	map.transformConstructionItem(item, newItem);
 	return newItem;
 }
 
@@ -5808,7 +5810,7 @@ void Game::playerAnswerModalWindow(uint32_t playerId, uint32_t modalWindowId, ui
 	// offline training, hard-coded
 	if (modalWindowId == std::numeric_limits<uint32_t>::max()) {
 		if (button == offlineTrainingWindow.defaultEnterButton) {
-			if (choice == SKILL_SWORD || choice == SKILL_AXE || choice == SKILL_CLUB || choice == SKILL_DISTANCE || choice == SKILL_MAGLEVEL) {
+			if (choice == SKILL_MELEE || choice == SKILL_DISTANCE || choice == SKILL_MAGLEVEL) {
 				BedItem* bedItem = player->getBedItem();
 				if (bedItem && bedItem->sleep(player)) {
 					player->setOfflineTrainingSkill(choice);

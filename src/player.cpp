@@ -237,25 +237,17 @@ WeaponType_t Player::getWeaponType() const
 int32_t Player::getWeaponSkill(const Item* item) const
 {
 	if (!item) {
-		return getSkillLevel(SKILL_FIST);
+		return getSkillLevel(SKILL_MELEE);
 	}
 
 	int32_t attackSkill;
 
 	WeaponType_t weaponType = item->getWeaponType();
 	switch (weaponType) {
-		case WEAPON_SWORD: {
-			attackSkill = getSkillLevel(SKILL_SWORD);
-			break;
-		}
-
-		case WEAPON_CLUB: {
-			attackSkill = getSkillLevel(SKILL_CLUB);
-			break;
-		}
-
+		case WEAPON_SWORD:
+		case WEAPON_CLUB:
 		case WEAPON_AXE: {
-			attackSkill = getSkillLevel(SKILL_AXE);
+			attackSkill = getSkillLevel(SKILL_MELEE);
 			break;
 		}
 
@@ -318,7 +310,7 @@ void Player::getShieldAndWeapon(const Item*& shield, const Item*& weapon) const
 
 int32_t Player::getDefense() const
 {
-	int32_t defenseSkill = getSkillLevel(SKILL_FIST);
+	int32_t defenseSkill = getSkillLevel(SKILL_MELEE);
 	int32_t defenseValue = 7;
 	const Item* weapon;
 	const Item* shield;

@@ -4,6 +4,10 @@ end
 
 function randomChance(chance)
     local roll = math.random(100)
-    print(roll .. " / " .. chance)
+    -- print(roll .. " / " .. chance)
     return chance >= roll
+end
+
+function randomItemFromTable(tbl)
+    return tbl[math.random(#tbl)]
 end

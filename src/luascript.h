@@ -752,7 +752,8 @@ class LuaScriptInterface
 		static int luaItemClearCustomAttributes(lua_State* L);
 		static int luaItemGetQuality(lua_State* L);
 		static int luaItemSetQuality(lua_State* L);
-
+		static int luaItemGetPurity(lua_State* L);
+		static int luaItemSetPurity(lua_State* L);
 
 		static int luaItemMoveTo(lua_State* L);
 		static int luaItemTransform(lua_State* L);
@@ -770,7 +771,11 @@ class LuaScriptInterface
 		static int luaItemIsCreationItem(lua_State* L);
 		static int luaItemUpdateConstructionItem(lua_State* L);
 
-		static int luaItemDamageItem(lua_State* L);
+		static int luaItemAddDurability(lua_State* L);
+		static int luaItemGetDurability(lua_State* L);
+		static int luaItemSetDurability(lua_State* L);
+		static int luaItemGetMaxDurability(lua_State* L);
+		static int luaItemSetMaxDurability(lua_State* L);
 
 		static int luaItemSetWeight(lua_State* L);
 		static int luaItemResetWeight(lua_State* L);
@@ -788,6 +793,8 @@ class LuaScriptInterface
 		static int luaContainerGetItems(lua_State* L);
 		static int luaContainerGetItemHoldingCount(lua_State* L);
 		static int luaContainerGetItemCountById(lua_State* L);
+
+		static int luaContainerSetCapacity(lua_State* L);
 
 		static int luaContainerGetItem(lua_State* L);
 		static int luaContainerHasItem(lua_State* L);
@@ -969,8 +976,8 @@ class LuaScriptInterface
 		static int luaPlayerGetGroup(lua_State* L);
 		static int luaPlayerSetGroup(lua_State* L);
 
-		static int luaPlayerGetStamina(lua_State* L);
-		static int luaPlayerSetStamina(lua_State* L);
+		//static int luaPlayerGetStamina(lua_State* L);
+		//static int luaPlayerSetStamina(lua_State* L);
 
 		static int luaPlayerGetSoul(lua_State* L);
 		static int luaPlayerAddSoul(lua_State* L);
@@ -1062,6 +1069,7 @@ class LuaScriptInterface
 
 		static int luaPlayerGetStoreInbox(lua_State* L);
 
+		static int luaPlayerGetStamina(lua_State* L);
 		static int luaPlayerChangeStamina(lua_State* L);
 		static int luaPlayerUseStamina(lua_State* L);
 

@@ -1058,7 +1058,14 @@ class Item : virtual public Thing
 
 		void moveCreationDataFrom(Item *item);
 
-		void damageItem(int32_t damage);
+		// returns real change
+		int addDurability(int32_t delta, int32_t *newDurability);
+		int getDurability();
+		// return new durability
+		int setDurability(int32_t newDurability);
+
+		int getMaxDurability();
+		int setMaxDurability(int32_t newMaxDurability);
 
 		void onDecay();
 
@@ -1067,6 +1074,9 @@ class Item : virtual public Thing
 
 		void setQuality(int64_t value);
 		int64_t getQuality();
+
+		void setPurity(int64_t value);
+		int64_t getPurity();
 
 	protected:
 		Cylinder* parent = nullptr;

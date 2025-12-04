@@ -297,7 +297,7 @@ end
 function Player.addSkillLevel(self, skillId, value)
 	local currentSkillLevel = self:getSkillLevel(skillId)
 	local sum = 0
-
+	print("addSkillLevel", skillId, value)
 	if value > 0 then
 		while value > 0 do
 			sum = sum + self:getVocation():getRequiredSkillTries(skillId, currentSkillLevel + value)
@@ -317,6 +317,7 @@ function Player.addSkillLevel(self, skillId, value)
 end
 
 function Player.addSkill(self, skillId, value, round)
+	print("addSkill", skillId, value, round)
 	if skillId == SKILL_LEVEL then
 		return self:addLevel(value, round or false)
 	elseif skillId == SKILL_MAGLEVEL then

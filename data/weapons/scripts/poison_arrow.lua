@@ -4,7 +4,7 @@ combat:setParameter(COMBAT_PARAM_DISTANCEEFFECT, CONST_ANI_POISONARROW)
 combat:setParameter(COMBAT_PARAM_BLOCKARMOR, true)
 combat:setFormula(COMBAT_FORMULA_SKILL, 0, 0, 1, 0)
 
-function onUseWeapon(player, variant)
+function onUseWeapon(item, player, variant)
 	if not combat:execute(player, variant) then
 		return false
 	end

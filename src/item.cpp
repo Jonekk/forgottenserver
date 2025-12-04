@@ -80,7 +80,7 @@ Container* Item::CreateItemAsContainer(const uint16_t type, uint16_t size)
 		return nullptr;
 	}
 
-	Container* newItem = new Container(type, size);
+	Container* newItem = new Container(type, size, it.containerType);
 	newItem->incrementReferenceCounter();
 	return newItem;
 }
@@ -979,7 +979,7 @@ std::string Item::getDescription(const ItemType& it, int32_t lookDistance,
 			}
 
 			begin = false;
-		} else if (it.weaponType != WEAPON_AMMO) {
+		} else if (true || it.weaponType != WEAPON_AMMO) {
 			int32_t attack, defense, extraDefense;
 			if (item) {
 				attack = item->getAttack();
@@ -1321,11 +1321,12 @@ std::string Item::getDescription(const ItemType& it, int32_t lookDistance,
 	} else if (it.isContainer() || (item && item->getContainer())) {
 		uint32_t volume = 0;
 		if (!item || !item->hasAttribute(ITEM_ATTRIBUTE_UNIQUEID)) {
-			if (it.isContainer()) {
-				volume = it.maxItems;
-			} else {
-				volume = item->getContainer()->capacity();
-			}
+			//if (it.isContainer()) {
+			//	volume = it.maxItems;
+			//} else {
+			//	volume = item->getContainer()->capacity();
+			//}
+			volume = item->getContainer()->capacity();
 		}
 
 		if (volume != 0) {
@@ -1732,7 +1733,7 @@ uint32_t Item::getCreationId() const {
 }
 
 bool Item::isCreationItem() const {
-	return this->creationId > 0;
+	return this->creationBuilder > 0;
 }
 
 void Item::setCreationBuilder(uint32_t builderGuid)
@@ -1751,20 +1752,59 @@ void Item::moveCreationDataFrom(Item *item)
 	creationBuilder = item->creationBuilder;
 }
 
-void Item::damageItem(int32_t damage) {
-	if (!isCreationItem()) return;
+int Item::addDurability(int32_t delta, int32_t *newDurability)
+{
 	const ItemAttributes::CustomAttribute* durabilityAttr = getCustomAttribute("durability");
-	if (!durabilityAttr) return;
+	if (!durabilityAttr) return 0;
+	int64_t oldDurability = boost::get<int64_t>(durabilityAttr->value);
 
+	*newDurability = setDurability(oldDurability + delta);
+
+	return *newDurability - oldDurability;
+}
+
+int Item::getDurability()
+{
+	const ItemAttributes::CustomAttribute* durabilityAttr = getCustomAttribute("durability");
+	if (!durabilityAttr) return -1;
 	int64_t durability = boost::get<int64_t>(durabilityAttr->value);
-	if (durability < 0) return;
+	return durability;
+}
 
-	if (damage < durability) {
-		std::string key = "durability";
-		setCustomAttribute<int64_t>(key, durability - damage);
-	} else {
-		g_game.internalRemoveItem(this, 1);
+int Item::setDurability(int32_t newDurability)
+{
+	newDurability = std::max(std::min(newDurability, getMaxDurability()), 0);
+
+	std::string key = "durability";
+	setCustomAttribute<int64_t>(key, newDurability);
+
+	if (newDurability == 0) {
+		g_game.internalRemoveItem(this, getItemCount());
 	}
+
+	return newDurability;
+}
+
+int Item::getMaxDurability()
+{
+	const ItemAttributes::CustomAttribute* durabilityAttr = getCustomAttribute("durability_max");
+	if (!durabilityAttr) return 0;
+	int64_t durabilityMax = boost::get<int64_t>(durabilityAttr->value);
+	return durabilityMax;
+}
+
+int Item::setMaxDurability(int32_t newMaxDurability)
+{
+	std::string key = "durability_max";
+	if (newMaxDurability == -1) {
+		removeCustomAttribute(key);
+		std::string keyDurability = "durability";
+		removeCustomAttribute(keyDurability);
+	} else {
+		setCustomAttribute<int64_t>(key, newMaxDurability);
+	}
+
+	return newMaxDurability;
 }
 
 void Item::onDecay()
@@ -1814,6 +1854,18 @@ void Item::setQuality(int64_t value)
 int64_t Item::getQuality()
 {
 	const ItemAttributes::CustomAttribute* qualityAttr = getCustomAttribute("Q");
+	return qualityAttr ?  boost::get<int64_t>(qualityAttr->value) : 0;
+}
+
+void Item::setPurity(int64_t value)
+{
+	std::string key = "Purity";
+	setCustomAttribute<int64_t>(key, value);
+}
+
+int64_t Item::getPurity()
+{
+	const ItemAttributes::CustomAttribute* qualityAttr = getCustomAttribute("Purity");
 	return qualityAttr ?  boost::get<int64_t>(qualityAttr->value) : 0;
 }
 

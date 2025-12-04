@@ -385,3 +385,166 @@ bool IOMapSerialize::saveHouse(House* house)
 	//End the transaction
 	return transaction.commit();
 }
+
+// TODO zrobić save
+bool IOMapSerialize::saveConstructionItems()
+{
+	int64_t start = OTSYS_TIME();
+	Database& db = Database::getInstance();
+
+	//Start the transaction
+	DBTransaction transaction;
+	if (!transaction.begin()) {
+		return false;
+	}
+
+	//clear old tile data
+	if (!db.executeQuery("DELETE FROM `creation_items2`")) {
+		return false;
+	}
+
+	DBInsert stmt("INSERT INTO `creation_items2` (`data`) VALUES ");
+
+	PropWriteStream stream;
+	for (const auto& it : g_game.map.constructionItems) {
+
+		const Position& itemPosition = it->getPosition();
+		stream.write<uint16_t>(itemPosition.x);
+		stream.write<uint16_t>(itemPosition.y);
+		stream.write<uint8_t>(itemPosition.z);
+
+		stream.write<uint16_t>(it->getCreationBuilder());
+
+		stream.write<uint32_t>(it->getItemCount());
+		std::cout << fmt::format("{:d} {:d} {:d} - {:d} {:d} id: {:d}", itemPosition.x, itemPosition.y, itemPosition.z, it->getCreationBuilder(), it->getItemCount(), it->getID()) << std::endl;
+		saveItem(stream, it);
+
+		size_t attributesSize;
+		const char* attributes = stream.getStream(attributesSize);
+		if (attributesSize > 0) {
+			if (!stmt.addRow(fmt::format("{:s}", db.escapeBlob(attributes, attributesSize)))) {
+				return false;
+			}
+			stream.clear();
+		}
+	}
+
+	if (!stmt.execute()) {
+		return false;
+	}
+
+	//End the transaction
+	bool success = transaction.commit();
+	std::cout << "> Saved construction items in: " <<
+	          (OTSYS_TIME() - start) / (1000.) << " s" << std::endl;
+	return success;
+}
+
+bool IOMapSerialize::loadConstructionContainer(PropStream& propStream, Container* container)
+{
+	while (container->serializationCount > 0) {
+		if (!loadConstructionItem(propStream, container)) {
+			std::cout << "[Warning - IOMapSerialize::loadConstructionContainer] Unserialization error for container item: " << container->getID() << std::endl;
+			return false;
+		}
+		container->serializationCount--;
+	}
+
+	uint8_t endAttr;
+	if (!propStream.read<uint8_t>(endAttr) || endAttr != 0) {
+		std::cout << "[Warning - IOMapSerialize::loadConstructionContainer] Unserialization error for container item: " << container->getID() << std::endl;
+		return false;
+	}
+	return true;
+}
+
+Item* IOMapSerialize::loadConstructionItem(PropStream& propStream, Cylinder* parent, uint16_t builderId)
+{
+	uint16_t id;
+	if (!propStream.read<uint16_t>(id)) {
+		return nullptr;
+	}
+
+	Tile* tile = nullptr;
+	if (parent->getParent() == nullptr) {
+		tile = parent->getTile();
+	}
+
+	const ItemType& iType = Item::items[id];
+	//create a new item
+	Item* item = Item::CreateItem(id);
+	if (item) {
+		if (item->unserializeAttr(propStream)) {
+			Container* container = item->getContainer();
+			if (container && !loadContainer(propStream, container)) {
+				delete item;
+				return nullptr;
+			}
+
+			// remove small things that get in the way visually? like small stones?
+			while (Item *topDownThing = tile->getTopDownItem())
+			{
+				if (topDownThing == item) break;
+				g_game.internalRemoveItem(topDownThing);
+			}
+
+			parent->internalAddThing(item);
+			item->startDecaying();
+			if (builderId) {
+				item->setCreationBuilder(builderId);
+			}
+		} else {
+			std::cout << "WARNING: Unserialization error in IOMapSerialize::loadConstructionItem()" << id << std::endl;
+			delete item;
+			return nullptr;
+		}
+	}
+	return item;
+}
+
+void IOMapSerialize::loadConstructionItems(Map* map)
+{
+	int64_t start = OTSYS_TIME();
+
+	DBResult_ptr result = Database::getInstance().storeQuery("SELECT `data` FROM `creation_items2`");
+	if (!result) {
+		return;
+	}
+
+	do {
+		unsigned long attrSize;
+		const char* attr = result->getStream("data", attrSize);
+
+		PropStream propStream;
+		propStream.init(attr, attrSize);
+
+		uint16_t x, y;
+		uint8_t z;
+		if (!propStream.read<uint16_t>(x) || !propStream.read<uint16_t>(y) || !propStream.read<uint8_t>(z)) {
+			continue;
+		}
+
+		Tile* tile = map->getTile(x, y, z);
+		if (!tile) {
+			continue;
+		}
+
+		uint16_t builderId;
+		if (!propStream.read<uint16_t>(builderId)) {
+			continue;
+		}
+
+		uint32_t item_count;
+		if (!propStream.read<uint32_t>(item_count)) {
+			continue;
+		}
+
+		while (item_count--) {
+			Item *newItem = loadConstructionItem(propStream, tile, builderId);
+			if (newItem) {
+				map->addConstructionItem(newItem);
+			}
+		}
+	} while (result->next());
+	std::cout << "> Loaded construction items in: " << (OTSYS_TIME() - start) / (1000.) << " s" << std::endl;
+}

@@ -262,9 +262,15 @@ class Map
 			return QTreeNode::getLeafStatic<QTreeLeafNode*, QTreeNode*>(&root, x, y);
 		}
 
+		void addConstructionItem(Item *item);
+		bool removeConstructionItem(Item *item);
+		bool transformConstructionItem(Item *item, Item *newItem);
+
+
 		Spawns spawns;
 		Towns towns;
 		Houses houses;
+		std::vector<Item*> constructionItems;
 
 	private:
 		SpectatorCache spectatorCache;

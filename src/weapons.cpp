@@ -334,7 +334,7 @@ bool Weapon::useFist(Player* player, Creature* target)
 	}
 
 	float attackFactor = player->getAttackFactor();
-	int32_t attackSkill = player->getSkillLevel(SKILL_FIST);
+	int32_t attackSkill = player->getSkillLevel(SKILL_MELEE);
 	int32_t attackValue = 7;
 
 	int32_t maxDamage = Weapons::getMaxWeaponDamage(player->getLevel(), attackSkill, attackValue, attackFactor);
@@ -351,7 +351,8 @@ bool Weapon::useFist(Player* player, Creature* target)
 
 	Combat::doTargetCombat(player, target, damage, params);
 	if (!player->hasFlag(PlayerFlag_NotGainSkill) && player->getAddAttackSkill()) {
-		player->addSkillAdvance(SKILL_FIST, 1);
+		// fist fighting should not add skill - too easy to train
+		//player->addSkillAdvance(SKILL_MELEE, 1);
 	}
 
 	return true;
@@ -363,7 +364,7 @@ void Weapon::internalUseWeapon(Player* player, Item* item, Creature* target, int
 		LuaVariant var;
 		var.type = VARIANT_NUMBER;
 		var.number = target->getID();
-		executeUseWeapon(player, var);
+		executeUseWeapon(item, player, var);
 	} else {
 		CombatDamage damage;
 		WeaponType_t weaponType = item->getWeaponType();
@@ -388,7 +389,7 @@ void Weapon::internalUseWeapon(Player* player, Item* item, Tile* tile) const
 		LuaVariant var;
 		var.type = VARIANT_TARGETPOSITION;
 		var.pos = tile->getPosition();
-		executeUseWeapon(player, var);
+		executeUseWeapon(item, player, var);
 	} else {
 		Combat::postCombatEffects(player, tile->getPosition(), params);
 		g_game.addMagicEffect(tile->getPosition(), CONST_ME_POFF);
@@ -477,9 +478,9 @@ int32_t Weapon::getHealthCost(const Player* player) const
 	return (player->getMaxHealth() * healthPercent) / 100;
 }
 
-bool Weapon::executeUseWeapon(Player* player, const LuaVariant& var) const
+bool Weapon::executeUseWeapon(Item* item, Player* player, const LuaVariant& var) const
 {
-	//onUseWeapon(player, var)
+	//onUseWeapon(item, player, var)
 	if (!scriptInterface->reserveScriptEnv()) {
 		std::cout << "[Error - Weapon::executeUseWeapon] Call stack overflow" << std::endl;
 		return false;
@@ -491,11 +492,13 @@ bool Weapon::executeUseWeapon(Player* player, const LuaVariant& var) const
 	lua_State* L = scriptInterface->getLuaState();
 
 	scriptInterface->pushFunction(scriptId);
+	LuaScriptInterface::pushThing(L, item);
+	LuaScriptInterface::setItemMetatable(L, -1, item);
 	LuaScriptInterface::pushUserdata<Player>(L, player);
 	LuaScriptInterface::setMetatable(L, -1, "Player");
 	scriptInterface->pushVariant(L, var);
 
-	return scriptInterface->callFunction(2);
+	return scriptInterface->callFunction(3);
 }
 
 void Weapon::decrementItemCount(Item* item)
@@ -552,18 +555,10 @@ bool WeaponMelee::getSkillType(const Player* player, const Item* item,
 
 	WeaponType_t weaponType = item->getWeaponType();
 	switch (weaponType) {
-		case WEAPON_SWORD: {
-			skill = SKILL_SWORD;
-			return true;
-		}
-
-		case WEAPON_CLUB: {
-			skill = SKILL_CLUB;
-			return true;
-		}
-
+		case WEAPON_SWORD:
+		case WEAPON_CLUB:
 		case WEAPON_AXE: {
-			skill = SKILL_AXE;
+			skill = SKILL_MELEE;
 			return true;
 		}
 

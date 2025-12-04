@@ -13,6 +13,18 @@ function getItemId(itemIdOrName)
     end
 end
 
+-- for use in higher levels
+function findRecipe(recipesList, recipeId)
+	print("findRecipe", recipesList)
+	for _, recipe in ipairs(recipesList) do
+		print(recipe.recipeId, recipeId)
+		if recipe.recipeId == recipeId then
+			return recipe
+		end
+	end
+	return nil
+end
+
 function craft(player, recipe, skillId, blueprintId)
 
 	if recipe == nil then
@@ -45,11 +57,14 @@ function craft(player, recipe, skillId, blueprintId)
 		result:setCustomAttribute("level", levelRequired)
 		result:setCustomAttribute("work", 0)
 		result:setCustomAttribute("work_max", recipe.staminaRequired)
-		result:setCustomAttribute("bp_count", recipe.count)
-		if recipe.quality then result:setCustomAttribute("bp_quality", gaussianRandom20p(recipe.quality)) end
-		if recipe.durability then result:setCustomAttribute("bp_durability", gaussianRandom20p(recipe.durability)) end
-		if recipe.watering then result:setCustomAttribute("bp_watering", gaussianRandom20p(recipe.watering)) end
-		if recipe.fertility then result:setCustomAttribute("bp_fertility", gaussianRandom20p(recipe.fertility)) end
+		result:setCustomAttribute("bp_count", recipe.count or 1)
+		if recipe.quality then result:setCustomAttribute("bp_quality", recipe.quality) end
+		if recipe.durability then result:setCustomAttribute("bp_durability", recipe.durability) end
+		if recipe.duration then result:setCustomAttribute("bp_duration", recipe.duration) end
+		if recipe.watering then result:setCustomAttribute("bp_watering", recipe.watering) end
+		if recipe.fertility then result:setCustomAttribute("bp_fertility", recipe.fertility) end
+		if recipe.maxSize then result:setCustomAttribute("bp_maxsize", recipe.maxSize) end
+		if recipe.attack then result:setCustomAttribute("bp_attack", recipe.attack) end
 
 		local targetItemWeight = ItemType(recipe.itemId):getWeight()
 		local weightChangePerWork = (targetItemWeight - sumWeight) / recipe.staminaRequired

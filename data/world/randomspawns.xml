@@ -4,7 +4,7 @@
         x="1032" y="983" z="7"
         radius="2"
         spawnChancePerCheck="0.30"
-        maxActive="0"
+        maxItemsActive="0"
         attemptsPerCheck="2">
     <items>
       <!--<item id="2787" weight="70"/> -->
@@ -14,32 +14,32 @@
     <spawns>
 
       <!-- Example 1: manual decay -->
-      <spawn itemid="2787" count="1..5" chance="0%" timeOfDay="night">
+      <item itemid="2787" count="1..5" chance="0%" timeOfDay="night">
         <decay time="10s" useNative="false" />
         <attrs>
           <attr key="quality" type="number" value="100" />
         </attrs>
-      </spawn>
+      </item> 
 
       <!-- Example 2: native decay -->
-      <spawn itemid="2788" count="1..5" chance="0%" timeOfDay="sunset">
+      <item itemid="2788" count="1..5" chance="0%" timeOfDay="sunset">
         <decay time="10s" useNative="false" />
         <attrs>
           <attr key="quality" type="number" value="100" />
         </attrs>
-      </spawn>
-      <spawn itemid="2790" count="1..5" chance="0%" timeOfDay="day">
+      </item> 
+      <item itemid="2790" count="1..5" chance="0%" timeOfDay="day">
         <decay time="10s" useNative="false" />
         <attrs>
           <attr key="quality" type="number" value="100" />
         </attrs>
-      </spawn>
-      <spawn itemid="2791" count="1..5" chance="0%" timeOfDay="sunrise">
+      </item> 
+      <item itemid="2791" count="1..5" chance="0%" timeOfDay="sunrise">
         <decay time="10s" useNative="false" />
         <attrs>
           <attr key="quality" type="number" value="100" />
         </attrs>
-      </spawn>
+      </item> 
     </spawns>
   </area>
 
@@ -47,22 +47,91 @@
         x="1032" y="983" z="7"
         radius="2"
         spawnChancePerCheck="0.30"
-        maxActive="3"
+        maxItemsActive="0"
         attemptsPerCheck="1">
     <spawns>
-      <spawn itemid="26427" count="1" chance="0%">
+      <item itemid="26427" count="1" chance="0%">
         <decay time="30s" useNative="false" />
         <attrs>
           <attr key="Q" type="number" value="100" />
         </attrs>
-      </spawn>
-      <spawn itemid="26429" count="1" chance="90%">
+      </item> 
+      <item itemid="26429" count="1" chance="90%">
         <decay time="30s" useNative="false" />
         <attrs>
           <attr key="Q" type="number" value="100" />
           <attr key="targetItem" type="number" value="26427" />
         </attrs>
-      </spawn>
+      </item> 
+    </spawns>
+  </area>
+26427
+26430
+26432
+26434
+26436
+26438
+26440
+26442
+  <area id="herbs"
+        x="1002" y="997" z="6"
+        radius="3"
+        spawnChancePerCheck="1"
+        maxItemsActive="10"
+        attemptsPerCheck="1">
+    <spawns>
+      <item itemid="26427" count="1" chance="100%">
+        <attrs>
+          <attr key="Q" type="number" value="100" />
+        </attrs>
+      </item>
+      <item itemid="26430" count="1" chance="100%">
+        <attrs>
+          <attr key="Q" type="number" value="100" />
+        </attrs>
+      </item>
+      <item itemid="26432" count="1" chance="100%">
+        <attrs>
+          <attr key="Q" type="number" value="100" />
+        </attrs>
+      </item>
+      <item itemid="26434" count="1" chance="100%">
+        <attrs>
+          <attr key="Q" type="number" value="100" />
+        </attrs>
+      </item>
+      <item itemid="26436" count="1" chance="100%">
+        <attrs>
+          <attr key="Q" type="number" value="100" />
+        </attrs>
+      </item>
+      <item itemid="26438" count="1" chance="100%">
+        <attrs>
+          <attr key="Q" type="number" value="100" />
+        </attrs>
+      </item>
+      <item itemid="26440" count="1" chance="100%">
+        <attrs>
+          <attr key="Q" type="number" value="100" />
+        </attrs>
+      </item>
+      <item itemid="26442" count="1" chance="100%">
+        <attrs>
+          <attr key="Q" type="number" value="100" />
+        </attrs>
+      </item>
+    </spawns>
+  </area>
+
+  <area id="monsters_test"
+        x="1002" y="997" z="6"
+        radius="3"
+        spawnChancePerCheck="1"
+        maxMonstersActive="3"
+        attemptsPerCheck="1">
+    <spawns>
+      <monster name="rabbit" chance="50%" />
+      <monster name="sheep" chance="50%" />
     </spawns>
   </area>
 

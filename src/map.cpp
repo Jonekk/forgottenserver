@@ -32,6 +32,8 @@ bool Map::loadMap(const std::string& identifier, bool loadHouses)
 		IOMapSerialize::loadHouseInfo();
 		IOMapSerialize::loadHouseItems(this);
 	}
+
+	IOMapSerialize::loadConstructionItems(this);
 	return true;
 }
 
@@ -52,6 +54,13 @@ bool Map::save()
 	saved = false;
 	for (uint32_t tries = 0; tries < 3; tries++) {
 		if (IOMapSerialize::saveHouseItems()) {
+			saved = true;
+			break;
+		}
+	}
+
+	for (uint32_t tries = 0; tries < 3; tries++) {
+		if (IOMapSerialize::saveConstructionItems()) {
 			saved = true;
 			break;
 		}
@@ -1069,4 +1078,26 @@ uint32_t Map::clean() const
 		<< " from " << tiles << " tile" << (tiles != 1 ? "s" : "") << " in "
 		<< (OTSYS_TIME() - start) / (1000.) << " seconds." << std::endl;
 	return count;
+}
+
+void Map::addConstructionItem(Item *item)
+{
+	constructionItems.push_back(item);
+}
+
+bool Map::removeConstructionItem(Item *item)
+{
+	auto it = std::find(constructionItems.begin(), constructionItems.end(), item);
+	if (it != constructionItems.end()) {
+		constructionItems.erase(it);
+		return true;
+	}
+	return false;
+}
+
+bool Map::transformConstructionItem(Item *item, Item *newItem)
+{
+	removeConstructionItem(item);
+	addConstructionItem(newItem);
+	return true;
 }

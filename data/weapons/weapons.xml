@@ -589,7 +589,7 @@
 	<!-- Ammunition -->
 	<distance id="1294" breakchance="3" /> <!-- small stone -->
 	<distance id="2111" action="removecount" /> <!-- snowball -->
-	<distance id="2389" breakchance="3" /> <!-- spear -->
+	
 	<distance id="2399" breakchance="10" /> <!-- throwing star -->
 	<distance id="2410" breakchance="7" /> <!-- throwing knife -->
 	<distance id="2543" action="removecount" /> <!-- bolt -->
@@ -620,4 +620,8 @@
 	<distance id="23529" breakchance="31" unproperly="1" level="60" /> <!-- Glooth Spear -->
 	<distance id="23839" action="removecount" unproperly="0" level="1" /> <!-- Simple Arrow -->
 	<distance id="25526" breakchance="10" /> <!-- throwing star of Sula -->
+
+	<distance id="2389" script="spear.lua" />
+	<distance id="26448" action="removecount" script="venomsap_arrow.lua" />
+	<distance id="26449" action="removecount" script="gorgons_arrow.lua" />
 </weapons>

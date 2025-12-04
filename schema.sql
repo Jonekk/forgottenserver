@@ -53,14 +53,8 @@ CREATE TABLE IF NOT EXISTS `players` (
   `offlinetraining_time` smallint unsigned NOT NULL DEFAULT '43200',
   `offlinetraining_skill` int NOT NULL DEFAULT '-1',
   `stamina` smallint unsigned NOT NULL DEFAULT '2520',
-  `skill_fist` int unsigned NOT NULL DEFAULT 10,
-  `skill_fist_tries` bigint unsigned NOT NULL DEFAULT 0,
-  `skill_club` int unsigned NOT NULL DEFAULT 10,
-  `skill_club_tries` bigint unsigned NOT NULL DEFAULT 0,
-  `skill_sword` int unsigned NOT NULL DEFAULT 10,
-  `skill_sword_tries` bigint unsigned NOT NULL DEFAULT 0,
-  `skill_axe` int unsigned NOT NULL DEFAULT 10,
-  `skill_axe_tries` bigint unsigned NOT NULL DEFAULT 0,
+  `skill_melee` int unsigned NOT NULL DEFAULT 10,
+  `skill_melee_tries` bigint unsigned NOT NULL DEFAULT 0,
   `skill_dist` int unsigned NOT NULL DEFAULT 10,
   `skill_dist_tries` bigint unsigned NOT NULL DEFAULT 0,
   `skill_shielding` int unsigned NOT NULL DEFAULT 10,
@@ -362,6 +356,10 @@ CREATE TABLE IF NOT EXISTS `towns` (
   `posz` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARACTER SET=utf8;
+
+CREATE TABLE IF NOT EXISTS `creation_items2` (
+  `data` longblob NOT NULL,
 ) ENGINE=InnoDB DEFAULT CHARACTER SET=utf8;
 
 INSERT INTO `server_config` (`config`, `value`) VALUES ('db_version', '29'), ('motd_hash', ''), ('motd_num', '0'), ('players_record', '0');

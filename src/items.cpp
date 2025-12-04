@@ -35,6 +35,8 @@ const std::unordered_map<std::string, ItemParseAttributes_t> ItemParseAttributes
 	{"floorchange", ITEM_PARSE_FLOORCHANGE},
 	{"corpsetype", ITEM_PARSE_CORPSETYPE},
 	{"containersize", ITEM_PARSE_CONTAINERSIZE},
+	{"containertype", ITEM_PARSE_CONTAINERTYPE},
+	{"itemcontainertype", ITEM_PARSE_ITEMCONTAINERTYPE},
 	{"fluidsource", ITEM_PARSE_FLUIDSOURCE},
 	{"readable", ITEM_PARSE_READABLE},
 	{"writeable", ITEM_PARSE_WRITEABLE},
@@ -197,6 +199,12 @@ const std::unordered_map<std::string, FluidTypes_t> FluidTypesMap = {
 	{"swamp", FLUID_SWAMP},
 	{"tea", FLUID_TEA},
 	{"mead", FLUID_MEAD},
+};
+
+
+const std::unordered_map<std::string, ContainerType_t> ContainerTypesMap = {
+	{"all", CONTAINER_TYPE_ALL},
+	{"herb", CONTAINER_TYPE_HERBS},
 };
 
 Items::Items()
@@ -691,6 +699,27 @@ void Items::parseItemNode(const pugi::xml_node& itemNode, uint16_t id)
 					it.maxItems = pugi::cast<uint16_t>(valueAttribute.value());
 					break;
 				}
+				case ITEM_PARSE_CONTAINERTYPE: {
+					tmpStrValue = asLowerCaseString(valueAttribute.as_string());
+					auto it2 = ContainerTypesMap.find(tmpStrValue);
+					if (it2 != ContainerTypesMap.end()) {
+						it.containerType = it2->second;
+					} else {
+						std::cout << "[Warning - Items::parseItemNode] Unknown itemContainerType: " << valueAttribute.as_string() << std::endl;
+					}
+					break;
+				}
+
+				case ITEM_PARSE_ITEMCONTAINERTYPE: {
+					tmpStrValue = asLowerCaseString(valueAttribute.as_string());
+					auto it2 = ContainerTypesMap.find(tmpStrValue);
+					if (it2 != ContainerTypesMap.end()) {
+						it.itemContainerType = it2->second;
+					} else {
+						std::cout << "[Warning - Items::parseItemNode] Unknown containerType: " << valueAttribute.as_string() << std::endl;
+					}
+					break;
+				}						
 
 				case ITEM_PARSE_FLUIDSOURCE: {
 					tmpStrValue = asLowerCaseString(valueAttribute.as_string());
@@ -894,21 +923,11 @@ void Items::parseItemNode(const pugi::xml_node& itemNode, uint16_t id)
 					break;
 				}
 
-				case ITEM_PARSE_SKILLSWORD: {
-					abilities.skills[SKILL_SWORD] = pugi::cast<int32_t>(valueAttribute.value());
+				case ITEM_PARSE_SKILLSWORD:
+				case ITEM_PARSE_SKILLAXE:
+				case ITEM_PARSE_SKILLCLUB:
+					// ignore
 					break;
-				}
-
-				case ITEM_PARSE_SKILLAXE: {
-					abilities.skills[SKILL_AXE] = pugi::cast<int32_t>(valueAttribute.value());
-					break;
-				}
-
-				case ITEM_PARSE_SKILLCLUB: {
-					abilities.skills[SKILL_CLUB] = pugi::cast<int32_t>(valueAttribute.value());
-					break;
-				}
-
 				case ITEM_PARSE_SKILLDIST: {
 					abilities.skills[SKILL_DISTANCE] = pugi::cast<int32_t>(valueAttribute.value());
 					break;
@@ -924,10 +943,9 @@ void Items::parseItemNode(const pugi::xml_node& itemNode, uint16_t id)
 					break;
 				}
 
-				case ITEM_PARSE_SKILLFIST: {
-					abilities.skills[SKILL_FIST] = pugi::cast<int32_t>(valueAttribute.value());
+				case ITEM_PARSE_SKILLFIST:
+					// ignore
 					break;
-				}
 
 				case ITEM_PARSE_CRITICALHITAMOUNT: {
 					abilities.specialSkills[SPECIALSKILL_CRITICALHITAMOUNT] = pugi::cast<int32_t>(valueAttribute.value());
